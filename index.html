@@ -572,10 +572,19 @@ select{cursor:pointer;background-image:none}
     </div>
     <div class="form-group"><div class="form-label">تاريخ البداية *</div>
       <div class="date-row">
-        <select id="sub-day"><option value="">يوم</option></select>
-        <select id="sub-month"><option value="">الشهر</option></select>
-        <select id="sub-year"><option value="">السنة</option></select>
+        <select id="sub-day" onchange="calcSubEndDate()"><option value="">يوم</option></select>
+        <select id="sub-month" onchange="calcSubEndDate()"><option value="">الشهر</option></select>
+        <select id="sub-year" onchange="calcSubEndDate()"><option value="">السنة</option></select>
       </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">تاريخ الانتهاء (يحسب تلقائياً — يمكن تعديله)</div>
+      <div class="date-row">
+        <select id="sub-end-day"><option value="">يوم</option></select>
+        <select id="sub-end-month"><option value="">الشهر</option></select>
+        <select id="sub-end-year"><option value="">السنة</option></select>
+      </div>
+      <div id="sub-end-preview" style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center"></div>
     </div>
     <div class="form-group"><div class="form-label">طريقة الدفع</div>
       <select id="sub-payment"><option>نقداً</option><option>تحويل بنكي</option><option>مدى</option><option>آجل</option></select>
@@ -928,20 +937,20 @@ function canEdit(){return currentUser&&(currentUser.role==='admin'||currentUser.
 // ============================================================
 function initDateSelects(){
   // Days
-  ['m-day','sub-day'].forEach(id=>{
-    const el=$(id);el.innerHTML='<option value="">يوم</option>';
+  ['m-day','sub-day','sub-end-day'].forEach(id=>{
+    const el=$(id);if(!el)return;el.innerHTML='<option value="">يوم</option>';
     for(let d=1;d<=31;d++)el.innerHTML+=`<option value="${d}">${d}</option>`;
   });
   // Months
-  ['m-month','sub-month'].forEach(id=>{
-    const el=$(id);el.innerHTML='<option value="">الشهر</option>';
+  ['m-month','sub-month','sub-end-month'].forEach(id=>{
+    const el=$(id);if(!el)return;el.innerHTML='<option value="">الشهر</option>';
     MONTHS_AR.forEach((m,i)=>el.innerHTML+=`<option value="${i+1}">${m}</option>`);
   });
   // Years
   const now=new Date().getFullYear();
-  ['m-year','sub-year'].forEach(id=>{
-    const el=$(id);el.innerHTML='<option value="">السنة</option>';
-    for(let y=now;y<=now+3;y++)el.innerHTML+=`<option value="${y}">${y}</option>`;
+  ['m-year','sub-year','sub-end-year'].forEach(id=>{
+    const el=$(id);if(!el)return;el.innerHTML='<option value="">السنة</option>';
+    for(let y=now;y<=now+5;y++)el.innerHTML+=`<option value="${y}">${y}</option>`;
   });
   // Time hours
   const hel=$('m-hour');hel.innerHTML='<option value="">ساعة</option>';
@@ -1427,6 +1436,24 @@ function changeMonth(dir){
 function updateSubAmount(){
   const map={شهري:prices.monthly||250,فصلي:prices.quarter||750,'نصف سنوي':prices.half||1500,سنوي:prices.annual||3000};
   $('sub-amount').value=map[$('sub-type').value]||prices.monthly||250;
+  calcSubEndDate();
+}
+
+function calcSubEndDate(){
+  const dateStr=buildDateStr($('sub-day').value,$('sub-month').value,$('sub-year').value);
+  if(!dateStr)return;
+  const type=$('sub-type').value;
+  const monthsMap={شهري:1,فصلي:3,'نصف سنوي':6,سنوي:12};
+  const endDate=new Date(dateStr);
+  endDate.setMonth(endDate.getMonth()+(monthsMap[type]||1));
+  // Set end date selects
+  const ed=$('sub-end-day'),em=$('sub-end-month'),ey=$('sub-end-year');
+  if(ed)ed.value=endDate.getDate();
+  if(em)em.value=endDate.getMonth()+1;
+  if(ey)ey.value=endDate.getFullYear();
+  // Show preview
+  const prev=$('sub-end-preview');
+  if(prev)prev.textContent='ينتهي في: '+fmtDate(endDate.toISOString().split('T')[0]);
 }
 function addSubscription(){
   const pid=parseInt($('sub-player').value);if(!pid){showNotif('اختر لاعباً','red');return;}
@@ -1463,6 +1490,7 @@ function renderSubs(){
       </div>
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-xs btn-fire" onclick="renewSub(${s.id})">تجديد</button>
+        <button class="btn btn-xs btn-blue" onclick="editSubEndDate(${s.id})"><i class="ti ti-calendar-event"></i> تعديل التاريخ</button>
         ${p&&p.phone&&(exp||s.status!=='نشط')?`<button class="btn btn-xs btn-wa" onclick="sendSubExpiredWA(${p.id})">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           تنبيه انتهاء
