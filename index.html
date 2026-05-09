@@ -221,13 +221,19 @@ select{cursor:pointer;background-image:none}
     </div>
     <div class="login-card">
       <div class="form-group">
-        <div class="form-label" style="color:rgba(255,255,255,.5);text-align:center">رمز الدخول</div>
-        <input type="password" id="login-pass" placeholder="• • • •" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
-        <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none">رمز غير صحيح</div>
+        <div class="form-label" style="color:rgba(255,255,255,.5);margin-bottom:8px">اختر المستخدم</div>
+        <div id="user-btns" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
       </div>
-      <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:4px">
-        <i class="ti ti-login"></i> دخول
-      </button>
+      <div id="pass-section" style="display:none">
+        <div class="form-group">
+          <div class="form-label" style="color:rgba(255,255,255,.5);text-align:center">رمز الدخول</div>
+          <input type="password" id="login-pass" placeholder="• • • •" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:24px;letter-spacing:8px;padding:12px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
+          <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none">رمز غير صحيح</div>
+        </div>
+        <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:15px;padding:13px">
+          <i class="ti ti-login"></i> دخول
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -288,6 +294,14 @@ select{cursor:pointer;background-image:none}
       <!-- Empty announce prompt -->
       <div id="announce-empty-dash" style="margin-bottom:14px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer" onclick="openAddAnnounce()">
         <div style="font-size:13px;color:var(--muted)">📢 اضغط هنا لإضافة أول إعلان أو صورة للأكاديمية</div>
+      </div>
+      <!-- Checkin Link Banner -->
+      <div style="background:linear-gradient(135deg,rgba(255,77,0,.12),rgba(255,140,0,.07));border:1px solid rgba(255,77,0,.2);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--fire)">🔗 رابط الحضور الذاتي</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">أرسله للاعبين يسجلون حضورهم</div>
+        </div>
+        <button class="btn btn-sm btn-fire" onclick="copyCheckinLink()"><i class="ti ti-copy"></i> نسخ الرابط</button>
       </div>
       <div class="stats-grid">
         <div class="stat-card" style="--accent:var(--fire)"><div class="stat-val" id="ds-players">0</div><div class="stat-label">إجمالي اللاعبين</div><span class="stat-badge badge-fire" id="ds-active-lbl">0 نشط</span></div>
@@ -432,9 +446,10 @@ select{cursor:pointer;background-image:none}
       <div class="card"><div class="card-header"><span class="card-title">ملخص</span></div><div id="rep-summary" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div></div>
     </div>
     <div class="page" id="page-settings">
-      <div class="card" id="settings-card-users" style="display:none">
-        <div class="card-title" style="margin-bottom:14px"><i class="ti ti-shield-lock" style="color:var(--fire)"></i> إدارة المستخدمين وكلمات السر</div>
+      <div class="card" id="settings-card-users">
+        <div class="card-title" style="margin-bottom:14px"><i class="ti ti-shield-lock" style="color:var(--fire)"></i> إدارة المستخدمين والرموز</div>
         <div id="users-settings-list"></div>
+        <button class="btn btn-fire btn-full" style="margin-top:10px" onclick="addNewUser()"><i class="ti ti-plus"></i> إضافة مستخدم</button>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:14px"><i class="ti ti-building" style="color:var(--fire)"></i> معلومات الأكاديمية</div>
@@ -515,22 +530,19 @@ select{cursor:pointer;background-image:none}
       <div class="form-label">الحالة</div>
       <select id="pl-status"><option value="نشط">نشط</option><option value="موقوف">موقوف</option><option value="منتهي">منتهي الاشتراك</option></select>
     </div>
+    <div class="form-group"><div class="form-label">رمز الحضور الذاتي (4-6 أرقام)</div><input type="number" id="pl-code" placeholder="مثال: 1234" style="letter-spacing:4px;text-align:center" inputmode="numeric"></div>
     <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="pl-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
-    <!-- Documents verification — 2 toggles -->
+    <!-- Documents verification — simple buttons -->
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600">📎 التحقق من المستندات</div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)" id="row-doc-id">
           <span style="font-size:13px">تم استلام الهوية / الإقامة / كرت العائلة</span>
-          <div id="sw-doc-id" data-on="0" onclick="toggleSw('doc-id')" style="width:50px;height:28px;border-radius:14px;background:#EF4444;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0;border:2px solid rgba(0,0,0,.2)">
-            <div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:1px;right:1px;transition:right .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)" id="th-doc-id"></div>
-          </div>
+          <button type="button" id="btn-doc-id" onclick="toggleDocBtn('doc-id')" style="padding:6px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;background:#EF4444;color:#fff;transition:all .2s;flex-shrink:0">لا ✗</button>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)" id="row-doc-terms">
           <span style="font-size:13px">اطلع على الشروط والسياسات</span>
-          <div id="sw-doc-terms" data-on="0" onclick="toggleSw('doc-terms')" style="width:50px;height:28px;border-radius:14px;background:#EF4444;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0;border:2px solid rgba(0,0,0,.2)">
-            <div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:1px;right:1px;transition:right .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)" id="th-doc-terms"></div>
-          </div>
+          <button type="button" id="btn-doc-terms" onclick="toggleDocBtn('doc-terms')" style="padding:6px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;background:#EF4444;color:#fff;transition:all .2s;flex-shrink:0">لا ✗</button>
         </div>
       </div>
     </div>
@@ -735,40 +747,59 @@ function save(key,value){ fbSave(key,value); }
 
 // Default users — passwords stored as plain text (simple academy use)
 let users = DB.load('users',[
-  {id:'admin', name:'المدير', role:'admin', pass:'1234'},
-  {id:'coach1', name:'المدرب الأول', role:'coach', pass:'5678'},
-  {id:'coach2', name:'المدرب الثاني', role:'coach', pass:'0000'},
+  {id:'admin', name:'المدير', role:'admin', pass:'305'},
 ]);
 
 let currentUser = null;
+
 let selectedUserId = null;
 
-function renderLoginUsers(){} // removed — single password login
-function selectUser(uid){} // removed
+function renderLoginUsers(){
+  const el=$('user-btns');
+  if(!el)return;
+  el.innerHTML=users.map(u=>`
+    <button onclick="selectUser('${u.id}')" id="ubtn-${u.id}"
+      style="padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:right;width:100%">
+      <span style="font-size:18px">${u.role==='admin'?'🛡️':'👨‍🏫'}</span>
+      <div>
+        <div style="font-weight:600">${u.name}</div>
+        <div style="font-size:11px;opacity:.5">${u.role==='admin'?'مدير الأكاديمية':'مدرب'}</div>
+      </div>
+    </button>`).join('');
+}
+
+function selectUser(uid){
+  selectedUserId=uid;
+  document.querySelectorAll('[id^="ubtn-"]').forEach(b=>{
+    b.style.borderColor=b.id==='ubtn-'+uid?'var(--fire)':'rgba(255,255,255,.15)';
+    b.style.background=b.id==='ubtn-'+uid?'rgba(255,77,0,.15)':'rgba(255,255,255,.06)';
+  });
+  $('pass-section').style.display='block';
+  $('login-pass').value='';
+  $('login-err').style.display='none';
+  setTimeout(()=>$('login-pass').focus(),100);
+}
 async function doLogin(){
-  const passEl=document.getElementById('login-pass');
-  const errEl=document.getElementById('login-err');
-  if(passEl){
-    const pass=passEl.value.trim();
-    if(pass&&pass!=='305'){
-      if(errEl)errEl.style.display='block';
-      passEl.value='';passEl.focus();
-      return;
-    }
-    if(errEl)errEl.style.display='none';
+  if(!selectedUserId){showNotif('اختر مستخدماً أولاً','red');return;}
+  const u=users.find(x=>x.id===selectedUserId);
+  const pass=($('login-pass').value||'').trim();
+  if(!u||pass!==u.pass){
+    $('login-err').style.display='block';
+    $('login-pass').value='';
+    $('login-pass').focus();
+    return;
   }
-  currentUser={id:'user',name:'المستخدم',role:'admin'};
+  $('login-err').style.display='none';
+  currentUser=u;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('app').style.flexDirection='column';
   document.getElementById('app').style.height='100%';
+  document.getElementById('header-user-role').textContent=u.name;
   initDateSelects();
   renderDashboard();
   applyRolePermissions();
-  loadAllData().then(()=>{
-    renderDashboard();
-    initDateSelects();
-  }).catch(e=>console.log('Firebase error:',e));
+  loadAllData().then(()=>{renderDashboard();initDateSelects();}).catch(e=>console.log('err',e));
 }
 function doLogout(){
   currentUser=null;
@@ -781,18 +812,42 @@ function applyRolePermissions(){
   document.getElementById('settings-card-users').style.display=isAdmin?'block':'none';
 }
 function renderUsersSettings(){
-  if(!currentUser||currentUser.role!=='admin')return;
   const el=document.getElementById('users-settings-list');
+  if(!el)return;
   el.innerHTML=users.map(u=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-      <div class="avatar av-sm" style="flex-shrink:0">${u.name[0]}</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:18px">${u.role==='admin'?'🛡️':'👨‍🏫'}</span>
       <div style="flex:1">
         <div style="font-weight:600;font-size:13px">${u.name}</div>
-        <div style="font-size:11px;color:var(--muted)">${u.role==='admin'?'مدير':'مدرب'}</div>
+        <div style="font-size:11px;color:var(--muted)">الرمز: ${u.pass}</div>
       </div>
-      <button class="btn btn-xs btn-blue" onclick="openChangePass('${u.id}')"><i class="ti ti-lock"></i> كلمة السر</button>
+      <button class="btn btn-xs btn-blue" onclick="openChangePass('${u.id}')"><i class="ti ti-edit"></i></button>
+      ${u.id!=='admin'?`<button class="btn btn-xs btn-red" onclick="deleteUser('${u.id}')"><i class="ti ti-trash"></i></button>`:''}
     </div>
   `).join('');
+}
+
+function addNewUser(){
+  const name=prompt('اسم المستخدم الجديد:');
+  if(!name)return;
+  const pass=prompt('رمز الدخول:');
+  if(!pass)return;
+  const role=confirm('هل هو مدير؟ (موافق=مدير، إلغاء=مدرب)')?'admin':'coach';
+  const id='user_'+Date.now();
+  users.push({id,name,role,pass});
+  DB.save('users',users);
+  renderUsersSettings();
+  renderLoginUsers();
+  showNotif('تم إضافة '+name+' ✓','green');
+}
+
+function deleteUser(uid){
+  if(!confirm('حذف هذا المستخدم؟'))return;
+  users=users.filter(x=>x.id!==uid);
+  DB.save('users',users);
+  renderUsersSettings();
+  renderLoginUsers();
+  showNotif('تم الحذف','red');
 }
 function openChangePass(uid){
   const u=users.find(x=>x.id===uid);
@@ -962,7 +1017,7 @@ function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
   $('pl-id').value=p.id;$('pl-fname').value=p.fname;$('pl-lname').value=p.lname;
-  $('pl-age').value=p.age||'';$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';
+  $('pl-age').value=p.age||'';$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';$('pl-code').value=p.checkinCode||'';
   $('pl-notes').value=p.notes||'';
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
@@ -975,27 +1030,33 @@ function openEditPlayer(id){
   },50);
   $('modal-player').classList.add('open');
 }
-// Doc switches stored in object
+// Doc state — simple object
 const docState={'doc-id':false,'doc-terms':false};
 
-function toggleSw(key){
+function toggleDocBtn(key){
   docState[key]=!docState[key];
-  setSwitch(key,docState[key]);
+  updateDocBtn(key);
 }
-function setSwitch(key,on){
-  docState[key]=!!on;
-  const sw=$('sw-'+key);
-  const th=$('th-'+key);
-  if(!sw||!th)return;
-  sw.style.background=on?'#22C55E':'#EF4444';
-  th.style.right=on?'25px':'1px';
+function updateDocBtn(key, val){
+  if(val!==undefined) docState[key]=!!val;
+  const btn=$('btn-'+key);
+  if(!btn)return;
+  if(docState[key]){
+    btn.textContent='نعم ✓';
+    btn.style.background='#22C55E';
+  } else {
+    btn.textContent='لا ✗';
+    btn.style.background='#EF4444';
+  }
 }
-function getSwitch(key){
-  return !!docState[key];
+function getSwitch(key){ return !!docState[key]; }
+function initDocCheckbox(id, checked){
+  docState[id]=!!checked;
+  updateDocBtn(id);
 }
-function initDocCheckbox(id,checked){
-  setSwitch(id,!!checked);
-}
+// Keep old names for compatibility
+function toggleSw(key){ toggleDocBtn(key); }
+function setSwitch(key,on){ updateDocBtn(key,on); }
 function savePlayer(){
   const fn=$('pl-fname').value.trim(),ln=$('pl-lname').value.trim();
   const age=$('pl-age').value.trim();
@@ -1010,13 +1071,13 @@ function savePlayer(){
     // edit
     const p=players.find(x=>x.id==pid);if(!p)return;
     p.fname=fn;p.lname=ln;p.age=parseInt($('pl-age').value)||null;
-    p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.groupId=$('pl-group').value||null;
+    p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.checkinCode=$('pl-code').value.trim()||null;p.groupId=$('pl-group').value||null;
     p.position=$('pl-pos').value||'لا يوجد';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
     save('players',players);logActivity(buildNotif('edit',fn+' '+ln),'var(--amber)');
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
@@ -1024,7 +1085,7 @@ function savePlayer(){
       health:false
     }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
-    closeModal('player');['pl-fname','pl-lname','pl-phone','pl-phone2','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
+    closeModal('player');['pl-fname','pl-lname','pl-phone','pl-phone2','pl-notes','pl-code'].forEach(id=>$(id).value='');$('pl-age').value='';
     renderPlayers();renderDashboard();showNotif(`تم إضافة ${fn} ✓`,'green');
   }
 }
@@ -1063,6 +1124,7 @@ function renderPlayers(){
           ${g?`<span class="badge badge-blue" style="font-size:9px">${g.name}</span>`:''}
           ${p.position&&p.position!=='لا يوجد'?`<span style="color:var(--muted)">${p.position}</span>`:''}
           ${p.phone2?`<span style="color:var(--muted);direction:ltr">${p.phone2} 🆘</span>`:''}
+          ${p.checkinCode?`<span style="color:var(--muted)">🔑 ${p.checkinCode}</span>`:'<span style="color:var(--red);font-size:10px">لا يوجد رمز حضور</span>'}
           <span style="color:${statColor}">● ${p.status}</span>
         </div>
         ${p.docs?`<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
@@ -1141,20 +1203,52 @@ function renderAttForSelectedDate(){
   renderFullReport();
 }
 
-function toggleAttDate(pid,date,btn){
+function getAttStatus(pid, date){
   const key=date+'_'+pid;
-  attendance[key]=!attendance[key];
+  const val=attendance[key];
+  if(!val||val===false) return 'absent';
+  if(val===true) return 'present'; // old format
+  return val.status||'present';
+}
+function getAttTime(pid, date){
+  const key=date+'_'+pid;
+  const val=attendance[key];
+  if(val&&typeof val==='object') return val.time||'';
+  return '';
+}
+
+function markAttendance(pid, date, status){
+  const key=date+'_'+pid;
+  const now=new Date();
+  const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  if(status==='absent'){
+    attendance[key]=false;
+  } else {
+    attendance[key]={status, time:timeStr};
+  }
   save('attendance',attendance);
-  const present=attendance[key];
-  btn.className='att-toggle '+(present?'att-present':'att-absent');
-  btn.textContent=present?'✓ حاضر':'✗ غائب';
   updateAttBadge();
   updateDashAtt();
   renderFullReport();
+  renderAttForSelectedDate();
+}
+
+function toggleAttDate(pid,date,btn){
+  // Cycle: absent → present → late → absent
+  const cur=getAttStatus(pid,date);
+  let next;
+  if(cur==='absent') next='present';
+  else if(cur==='present') next='late';
+  else next='absent';
+  markAttendance(pid,date,next);
 }
 
 function markAllForDate(val){
-  players.forEach(p=>{attendance[currentAttDate+'_'+p.id]=val;});
+  const now=new Date();
+  const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  players.forEach(p=>{
+    attendance[currentAttDate+'_'+p.id]=val?{status:'present',time:timeStr}:false;
+  });
   save('attendance',attendance);
   renderAttForSelectedDate();
   updateDashAtt();
@@ -1165,11 +1259,9 @@ function renderFullReport(){
   const el=$('att-full-report');
   if(!el)return;
   if(!players.length){el.innerHTML='<div class="empty" style="padding:16px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';return;}
-  // Get all training dates in current month
   const year=histYear,month=histMonth;
   const daysInMonth=new Date(year,month+1,0).getDate();
   const monthStr=`${year}-${String(month+1).padStart(2,'0')}`;
-  // Find training days in this month
   const trainingDates=[];
   for(let d=1;d<=daysInMonth;d++){
     const dateStr=`${monthStr}-${String(d).padStart(2,'0')}`;
@@ -1178,25 +1270,68 @@ function renderFullReport(){
   }
   if(!trainingDates.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px">لا توجد أيام تدريب في هذا الشهر</p>';return;}
   const dayNames={0:'أحد',2:'ثلاثاء',3:'أربعاء'};
-  // Header
-  let html=`<div style="overflow-x:auto"><table style="min-width:100%"><thead><tr>
-    <th style="text-align:right;padding:8px 10px;color:var(--muted);font-size:11px;white-space:nowrap">اللاعب</th>
-    ${trainingDates.map(t=>`<th style="text-align:center;padding:6px 4px;color:var(--muted);font-size:10px;min-width:36px">${dayNames[t.day]}<br>${t.d}</th>`).join('')}
-    <th style="text-align:center;padding:8px 6px;color:var(--muted);font-size:11px">النسبة</th>
+
+  // Build player stats
+  const playerStats=players.map(p=>{
+    let pr=0,lt=0,ab=0;
+    trainingDates.forEach(t=>{
+      const st=getAttStatus(p.id,t.dateStr);
+      if(st==='present')pr++;
+      else if(st==='late')lt++;
+      else ab++;
+    });
+    const total=trainingDates.length;
+    const pct=total?Math.round((pr+lt)/total*100):0;
+    return{...p,pr,lt,ab,total,pct};
+  }).sort((a,b)=>b.pct-a.pct);
+
+  // ── Bar chart ──
+  let html=`<div style="margin-bottom:16px">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">📊 نسب الحضور</div>
+    <div style="display:flex;flex-direction:column;gap:8px">`;
+  playerStats.forEach(p=>{
+    const color=p.pct>=80?'var(--green)':p.pct>=60?'var(--amber)':'var(--red)';
+    html+=`<div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+        <span>${p.fname} ${p.lname}</span>
+        <span style="color:${color};font-weight:600">${p.pct}% <span style="color:var(--muted);font-weight:400">(${p.pr}✓ ${p.lt}⏰ ${p.ab}✗)</span></span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${p.pct}%;background:${color};border-radius:3px;transition:width .5s"></div>
+      </div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+
+  // ── Table ──
+  html+=`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">📋 جدول الحضور التفصيلي</div>
+  <div style="overflow-x:auto">
+  <table style="min-width:100%;border-collapse:collapse">
+  <thead><tr>
+    <th style="text-align:right;padding:6px 8px;color:var(--muted);font-size:10px;white-space:nowrap;border-bottom:1px solid var(--border)">اللاعب</th>
+    ${trainingDates.map(t=>`<th style="text-align:center;padding:4px 2px;color:var(--muted);font-size:9px;min-width:30px;border-bottom:1px solid var(--border)">${dayNames[t.day]}<br><span style="font-size:10px;color:var(--text)">${t.d}</span></th>`).join('')}
+    <th style="text-align:center;padding:6px 4px;color:var(--muted);font-size:10px;border-bottom:1px solid var(--border)">%</th>
   </tr></thead><tbody>`;
-  players.forEach(p=>{
-    let pr=0;
+
+  playerStats.forEach(p=>{
     const cells=trainingDates.map(t=>{
-      const key=t.dateStr+'_'+p.id;
-      const present=!!attendance[key];
-      if(present)pr++;
-      return`<td style="text-align:center;padding:4px"><span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:${present?'var(--green)':'rgba(239,68,68,.15)'};color:${present?'#fff':'var(--red)'};font-size:11px;line-height:24px;text-align:center">${present?'✓':'✗'}</span></td>`;
+      const st=getAttStatus(p.id,t.dateStr);
+      const time=getAttTime(p.id,t.dateStr);
+      const cfg={
+        present:{bg:'rgba(34,197,94,.2)',color:'var(--green)',icon:'✓'},
+        late:{bg:'rgba(245,158,11,.2)',color:'var(--amber)',icon:'⏰'},
+        absent:{bg:'rgba(239,68,68,.1)',color:'var(--red)',icon:'✗'}
+      };
+      const c=cfg[st]||cfg.absent;
+      return`<td style="text-align:center;padding:3px 2px" title="${time?'الساعة '+time:''}">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${c.bg};color:${c.color};font-size:11px">${c.icon}</span>
+      </td>`;
     }).join('');
-    const pct=trainingDates.length?Math.round(pr/trainingDates.length*100):0;
+    const color=p.pct>=80?'var(--green)':p.pct>=60?'var(--amber)':'var(--red)';
     html+=`<tr>
-      <td style="padding:6px 10px;white-space:nowrap;font-size:12px">${p.fname} ${p.lname}</td>
+      <td style="padding:5px 8px;white-space:nowrap;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03)">${p.fname} ${p.lname}</td>
       ${cells}
-      <td style="text-align:center;padding:6px;font-size:12px;font-weight:600;color:${pct>=80?'var(--green)':pct>=60?'var(--amber)':'var(--red)'}">${pct}%</td>
+      <td style="text-align:center;padding:5px 4px;font-size:11px;font-weight:700;color:${color};border-bottom:1px solid rgba(255,255,255,.03)">${p.pct}%</td>
     </tr>`;
   });
   html+=`</tbody></table></div>`;
@@ -1235,6 +1370,17 @@ function toggleAtt(pid,date,btn){
   updateAttBadge();updateDashAtt();
 }
 function markAll(val){ markAllForDate(val); }
+function markAllForDateStatus(status){
+  players.forEach(p=>{
+    const key=currentAttDate+'_'+p.id;
+    const now=new Date();
+    const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    attendance[key]=status==='absent'?false:{status,time:timeStr};
+  });
+  save('attendance',attendance);
+  renderAttForSelectedDate();
+  updateDashAtt();
+}
 function updateAttBadge(){
   const today=todayStr();const p=players.filter(x=>attendance[today+'_'+x.id]).length;
   $('att-count-badge').textContent=`${p} / ${players.length}`;
@@ -1675,7 +1821,151 @@ function clearAllActivity(){
 // ============================================================
 //  REPORTS
 // ============================================================
+let reportMonth=new Date().getMonth();
+let reportYear=new Date().getFullYear();
+
+function changeReportMonth(dir){
+  reportMonth+=dir;
+  if(reportMonth>11){reportMonth=0;reportYear++;}
+  if(reportMonth<0){reportMonth=11;reportYear--;}
+  renderMonthlyReport();
+}
+
+function renderMonthlyReport(){
+  const lbl=$('report-month-label');
+  if(lbl)lbl.textContent=MONTHS_AR[reportMonth]+' '+reportYear;
+  const el=$('monthly-report-content');
+  if(!el)return;
+
+  const monthStr=`${reportYear}-${String(reportMonth+1).padStart(2,'0')}`;
+  const today=new Date();
+
+  // Count training sessions in month
+  const daysInMonth=new Date(reportYear,reportMonth+1,0).getDate();
+  let trainingSessions=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(reportYear,reportMonth,d);
+    if([0,2,3].includes(date.getDay()))trainingSessions++;
+  }
+
+  // Attendance stats
+  let totalPresent=0,totalLate=0,totalAbsent=0;
+  players.forEach(p=>{
+    for(let d=1;d<=daysInMonth;d++){
+      const date=new Date(reportYear,reportMonth,d);
+      if(![0,2,3].includes(date.getDay()))continue;
+      const dateStr=`${monthStr}-${String(d).padStart(2,'0')}`;
+      const st=getAttStatus(p.id,dateStr);
+      if(st==='present')totalPresent++;
+      else if(st==='late')totalLate++;
+      else totalAbsent++;
+    }
+  });
+
+  // New players this month
+  const newPlayers=players.filter(p=>p.joinDate&&p.joinDate.startsWith(monthStr)).length;
+
+  // Revenue this month
+  const monthRevenue=subscriptions.filter(s=>s.start&&s.start.startsWith(monthStr)).reduce((a,s)=>a+s.amount,0);
+
+  // Renewed subs
+  const renewedSubs=subscriptions.filter(s=>s.start&&s.start.startsWith(monthStr)&&s.status==='نشط').length;
+
+  // Best attendance player
+  const playerStats=players.map(p=>{
+    let pr=0,tot=0;
+    for(let d=1;d<=daysInMonth;d++){
+      const date=new Date(reportYear,reportMonth,d);
+      if(![0,2,3].includes(date.getDay()))continue;
+      const dateStr=`${monthStr}-${String(d).padStart(2,'0')}`;
+      const st=getAttStatus(p.id,dateStr);
+      tot++;
+      if(st==='present'||st==='late')pr++;
+    }
+    return{...p,pr,tot,pct:tot?Math.round(pr/tot*100):0};
+  }).sort((a,b)=>b.pct-a.pct);
+  const best=playerStats[0];
+
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:24px;color:var(--green)">${totalPresent}</div>
+        <div style="font-size:11px;color:var(--muted)">حضور</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:24px;color:var(--amber)">${totalLate}</div>
+        <div style="font-size:11px;color:var(--muted)">تأخير</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:24px;color:var(--red)">${totalAbsent}</div>
+        <div style="font-size:11px;color:var(--muted)">غياب</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-family:'Oswald',sans-serif;font-size:24px;color:var(--fire)">${trainingSessions}</div>
+        <div style="font-size:11px;color:var(--muted)">جلسات تدريب</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--card2);border-radius:8px">
+        <span style="color:var(--muted)">لاعبون جدد</span>
+        <span style="font-weight:600;color:var(--green)">${newPlayers} لاعب</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--card2);border-radius:8px">
+        <span style="color:var(--muted)">اشتراكات مجددة</span>
+        <span style="font-weight:600;color:var(--blue)">${renewedSubs} اشتراك</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--card2);border-radius:8px">
+        <span style="color:var(--muted)">الإيرادات</span>
+        <span style="font-weight:600;color:var(--fire)">${monthRevenue.toLocaleString()} ريال</span>
+      </div>
+      ${best&&best.tot>0?`<div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--card2);border-radius:8px">
+        <span style="color:var(--muted)">🏆 أفضل حضور</span>
+        <span style="font-weight:600;color:var(--amber)">${best.fname} ${best.lname} (${best.pct}%)</span>
+      </div>`:''}
+    </div>`;
+}
+
+function shareMonthlyReport(){
+  const m=MONTHS_AR[reportMonth]+' '+reportYear;
+  const monthStr=`${reportYear}-${String(reportMonth+1).padStart(2,'0')}`;
+  const daysInMonth=new Date(reportYear,reportMonth+1,0).getDate();
+  let trainingSessions=0,totalPresent=0,totalLate=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(reportYear,reportMonth,d);
+    if(![0,2,3].includes(date.getDay()))continue;
+    trainingSessions++;
+    players.forEach(p=>{
+      const st=getAttStatus(p.id,`${monthStr}-${String(d).padStart(2,'0')}`);
+      if(st==='present')totalPresent++;
+      else if(st==='late')totalLate++;
+    });
+  }
+  const newPlayers=players.filter(p=>p.joinDate&&p.joinDate.startsWith(monthStr)).length;
+  const revenue=subscriptions.filter(s=>s.start&&s.start.startsWith(monthStr)).reduce((a,s)=>a+s.amount,0);
+  const academy=settings.name||'أكاديمية ون فاير';
+  const msg=`📊 *التقرير الشهري — ${m}*
+*${academy}*
+
+`+
+    `👥 إجمالي اللاعبين: ${players.length}
+`+
+    `🆕 لاعبون جدد: ${newPlayers}
+`+
+    `📅 جلسات التدريب: ${trainingSessions}
+`+
+    `✅ إجمالي الحضور: ${totalPresent}
+`+
+    `⏰ إجمالي التأخير: ${totalLate}
+`+
+    `💰 الإيرادات: ${revenue.toLocaleString()} ريال
+
+`+
+    `_تم إنشاؤه تلقائياً من نظام الأكاديمية_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
 function renderReports(){
+  renderMonthlyReport();
   const today=new Date();
   const pa=players.map(p=>{
     const pr=Object.keys(attendance).filter(k=>k.endsWith('_'+p.id)&&attendance[k]).length;
@@ -1715,6 +2005,14 @@ function renderSettingsPage(){
   $('notif-edit').value=notifTexts.edit||'';$('notif-sub').value=notifTexts.sub||'';$('notif-match').value=notifTexts.match||'';
   applyRolePermissions();
 }
+function copyCheckinLink(){
+  const link='https://ivveiiii.github.io/one-fire/checkin.html';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link).then(()=>showNotif('تم نسخ الرابط ✓','green'));
+  } else {
+    prompt('انسخ الرابط:',link);
+  }
+}
 function saveSettings(){
   settings.name=$('set-name').value;settings.manager=$('set-manager').value;settings.phone=$('set-phone').value;settings.location=$('set-location').value;settings.remindDays=parseInt($('remind-days').value)||7;
   save('settings',settings);showNotif('تم الحفظ ✓','green');
@@ -1725,6 +2023,11 @@ function savePrices(){
   prices.half=parseInt($('price-half').value)||1500;
   prices.annual=parseInt($('price-annual').value)||3000;
   save('prices',prices);showNotif('تم الحفظ ✓','green');
+}
+function saveTrainSettings(){
+  settings.trainStart=$('train-start').value||'16:00';
+  settings.lateLimit=parseInt($('late-limit').value)||10;
+  save('settings',settings);showNotif('تم الحفظ ✓','green');
 }
 function saveNotifTexts(){
   notifTexts.add=$('notif-add').value||'انضم لاعب جديد: {اسم}';
@@ -1818,6 +2121,7 @@ async function deleteAnnounce(idx){
 
 function init(){
   $('month-label').textContent=MONTHS_AR[histMonth]+' '+histYear;
+  renderLoginUsers();
 }
 init();
 
