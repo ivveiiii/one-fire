@@ -597,41 +597,18 @@ select{cursor:pointer;background-image:none}
 
 <div class="notif" id="notif"></div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
 // ============================================================
-//  FIREBASE SETUP
+//  STORAGE (localStorage)
 // ============================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDFVwa5edJPTKTocuRkxmOM8wZNu4H5ntY",
-  authDomain: "one-fire-3cd79.firebaseapp.com",
-  databaseURL: "https://one-fire-3cd79-default-rtdb.firebaseio.com",
-  projectId: "one-fire-3cd79",
-  storageBucket: "one-fire-3cd79.firebasestorage.app",
-  messagingSenderId: "356509741618",
-  appId: "1:356509741618:web:93974290aa61864749822b"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-async function fbSave(key, value) {
-  try { await db.ref('academy/' + key).set(value); } catch(e) { console.error('Save error', e); }
-}
-
-async function fbLoad(key, def) {
-  try {
-    const snap = await db.ref('academy/' + key).get();
-    return snap.exists() ? snap.val() : def;
-  } catch(e) { return def; }
-}
-
-// Local fallback for users (kept local for security)
 const DB={
   load(k,d){try{const v=localStorage.getItem('onfire_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
   save(k,v){localStorage.setItem('onfire_'+k,JSON.stringify(v));}
 };
+
+async function fbSave(key, value) { DB.save(key, value); }
+async function fbLoad(key, def) { return DB.load(key, def); }
 
 // Load all data from Firebase
 async function loadAllData(){
@@ -657,7 +634,7 @@ async function loadAllData(){
 }
 
 // Unified save to Firebase
-function save(key,value){fbSave(key,value);}
+function save(key,value){ DB.save(key,value); fbSave(key,value); }
 
 // Default users — passwords stored as plain text (simple academy use)
 let users = DB.load('users',[
@@ -950,7 +927,7 @@ function renderPlayers(){
           <span style="font-size:10px;color:${p.docs.family?'var(--green)':'var(--muted)'}">${p.docs.family?'✓':'○'} عائلة</span>
           <span style="font-size:10px;color:${p.docs.terms?'var(--green)':'var(--red)'}">${p.docs.terms?'✓':'✗'} شروط</span>
           <span style="font-size:10px;color:${p.docs.health?'var(--green)':'var(--muted)'}">${p.docs.health?'✓':'○'} صحة</span>
-        </div>`:''}`
+        </div>`:''}
         ${attT?`<div style="margin-top:5px;display:flex;align-items:center;gap:6px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:${pct}%;${pct<60?'background:var(--red)':pct<80?'background:var(--amber)':''}"></div></div><span style="font-size:10px;color:var(--muted)">${pct}%</span></div>`:''}
       </div>
       <div class="player-row-actions">
