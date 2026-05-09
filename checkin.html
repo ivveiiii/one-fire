@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>تسجيل حضور — ون فاير 🔥</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--fire:#FF4D00;--fire2:#FF8C00;--dark:#0A0A0A;--card:#161616;--card2:#1E1E1E;--border:#2A2A2A;--text:#F0F0F0;--muted:#777;--green:#22C55E;--red:#EF4444}
+body{font-family:'Tajawal',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;direction:rtl;display:flex;align-items:center;justify-content:center;padding:20px}
+
+.container{width:100%;max-width:380px}
+
+/* Logo */
+.logo{text-align:center;margin-bottom:32px}
+.logo-img{width:90px;height:90px;object-fit:contain;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(255,77,0,.4))}
+.logo-title{font-family:'Oswald',sans-serif;font-size:26px;color:var(--fire);letter-spacing:2px}
+.logo-sub{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px}
+
+/* Input */
+.form-label{font-size:12px;color:var(--muted);margin-bottom:8px;display:block}
+input{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:20px;outline:none;width:100%;text-align:center;letter-spacing:6px;transition:border-color .2s}
+input:focus{border-color:var(--fire)}
+input::placeholder{color:var(--muted);letter-spacing:0;font-size:14px}
+
+/* Button */
+.btn{width:100%;padding:14px;border-radius:10px;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;margin-top:14px;box-shadow:0 4px 20px rgba(255,77,0,.3);transition:all .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(255,77,0,.4)}
+.btn:active{transform:translateY(0)}
+
+/* States */
+.screen{display:none}.screen.active{display:block}
+
+/* Success */
+.success-icon{font-size:80px;text-align:center;margin:16px 0;animation:bounce .5s ease}
+@keyframes bounce{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.success-name{font-family:'Oswald',sans-serif;font-size:24px;color:var(--green);text-align:center;margin-bottom:8px}
+.success-msg{font-size:14px;color:var(--muted);text-align:center;line-height:1.7}
+.success-date{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* Already */
+.already-icon{font-size:60px;text-align:center;margin:16px 0}
+.already-msg{font-size:15px;color:var(--amber,#F59E0B);text-align:center}
+
+/* Error */
+.err{color:var(--red);font-size:13px;text-align:center;margin-top:8px;display:none}
+
+/* Day badge */
+.day-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;margin-bottom:16px;background:rgba(255,77,0,.12);color:var(--fire)}
+.not-training{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px;font-size:13px;color:#F59E0B;text-align:center;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">
+    <img src="https://raw.githubusercontent.com/ivveiiii/one-fire/main/logo.png.jpeg" class="logo-img" onerror="this.style.display='none'">
+    <div class="logo-title">ONE FIRE</div>
+    <div class="logo-sub">تسجيل الحضور</div>
+  </div>
+
+  <!-- Screen 1: Enter code -->
+  <div class="screen active" id="screen-login">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:16px" id="day-info"></div>
+      <div class="form-label">أدخل رمزك الخاص</div>
+      <input type="number" id="player-code" placeholder="أدخل الرمز" onkeydown="if(event.key==='Enter')checkIn()" oninput="this.value=this.value.slice(0,6)" inputmode="numeric">
+      <div class="err" id="code-err">رمز غير صحيح — تواصل مع المدرب</div>
+      <button class="btn" onclick="checkIn()">✓ تسجيل حضوري اليوم</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Success -->
+  <div class="screen" id="screen-success">
+    <div class="card" style="text-align:center">
+      <div class="success-icon">⚽</div>
+      <div class="success-name" id="success-name"></div>
+      <div class="success-msg">تم تسجيل حضورك بنجاح!<br>أراك في الملعب 🔥</div>
+      <div class="success-date" id="success-date"></div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Already checked in -->
+  <div class="screen" id="screen-already">
+    <div class="card" style="text-align:center">
+      <div class="already-icon">✅</div>
+      <div class="already-msg" id="already-name"></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:10px">حضورك مسجل مسبقاً لهذا اليوم</div>
+    </div>
+  </div>
+
+  <!-- Screen 4: Not training day -->
+  <div class="screen" id="screen-noday">
+    <div class="card" style="text-align:center">
+      <div style="font-size:60px;margin:16px 0">📅</div>
+      <div style="font-size:15px;color:#F59E0B;margin-bottom:8px">اليوم ليس يوم تدريب</div>
+      <div style="font-size:13px;color:var(--muted)">أيام التدريب: الأحد، الثلاثاء، الأربعاء</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDFVwa5edJPTKTocuRkxmOM8wZNu4H5ntY",
+  authDomain: "one-fire-3cd79.firebaseapp.com",
+  databaseURL: "https://one-fire-3cd79-default-rtdb.firebaseio.com",
+  projectId: "one-fire-3cd79",
+  storageBucket: "one-fire-3cd79.firebasestorage.app",
+  messagingSenderId: "356509741618",
+  appId: "1:356509741618:web:93974290aa61864749822b"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const TRAINING_DAYS = [0, 2, 3]; // Sun, Tue, Wed
+const DAY_NAMES = {0:'الأحد',1:'الاثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت'};
+const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmtDate(d){if(!d)return'';const p=d.split('-');return`${parseInt(p[2])} ${MONTHS_AR[parseInt(p[1])-1]} ${p[0]}`;}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Init — check if today is training day
+function init(){
+  const today = new Date();
+  const dayNum = today.getDay();
+  const dayEl = document.getElementById('day-info');
+
+  if(TRAINING_DAYS.includes(dayNum)){
+    dayEl.innerHTML = `<span class="day-badge">📅 ${DAY_NAMES[dayNum]} — ${fmtDate(todayStr())}</span>`;
+  } else {
+    showScreen('screen-noday');
+  }
+}
+
+async function checkIn(){
+  const code = document.getElementById('player-code').value.trim();
+  if(!code){return;}
+
+  // Load players from Firebase
+  try {
+    const snap = await Promise.race([
+      db.ref('academy/players').get(),
+      new Promise((_,r)=>setTimeout(()=>r('timeout'),5000))
+    ]);
+
+    if(snap==='timeout'||!snap.exists()){
+      document.getElementById('code-err').textContent='تعذر الاتصال، حاول مرة أخرى';
+      document.getElementById('code-err').style.display='block';
+      return;
+    }
+
+    const playersData = snap.val();
+    const players = Array.isArray(playersData)?playersData:Object.values(playersData||{});
+
+    // Find player by code
+    const player = players.find(p => p.checkinCode && p.checkinCode.toString() === code.toString());
+
+    if(!player){
+      document.getElementById('code-err').textContent='رمز غير صحيح — تواصل مع المدرب';
+      document.getElementById('code-err').style.display='block';
+      document.getElementById('player-code').value='';
+      return;
+    }
+
+    document.getElementById('code-err').style.display='none';
+
+    // Check if already checked in today
+    const today = todayStr();
+    const attKey = `academy/attendance/${today}_${player.id}`;
+    const attSnap = await db.ref(attKey).get();
+
+    if(attSnap.exists() && attSnap.val()===true){
+      // Already checked in
+      document.getElementById('already-name').textContent = `${player.fname} ${player.lname} — حضورك مسجل ✓`;
+      showScreen('screen-already');
+      return;
+    }
+
+    // Register attendance
+    await db.ref(attKey).set(true);
+
+    // Show success
+    document.getElementById('success-name').textContent = `${player.fname} ${player.lname}`;
+    document.getElementById('success-date').textContent = `${DAY_NAMES[new Date().getDay()]} — ${fmtDate(today)}`;
+    showScreen('screen-success');
+
+  } catch(e){
+    document.getElementById('code-err').textContent='حدث خطأ، حاول مرة أخرى';
+    document.getElementById('code-err').style.display='block';
+    console.error(e);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
