@@ -488,12 +488,13 @@ select{cursor:pointer;background-image:none}
       <div class="form-group"><div class="form-label">اسم العائلة *</div><input id="pl-lname" placeholder="العمري"></div>
     </div>
     <div class="form-grid">
-      <div class="form-group"><div class="form-label">العمر (سنة)</div><input type="number" id="pl-age" placeholder="12" min="4" max="99"></div>
-      <div class="form-group"><div class="form-label">جوال ولي الأمر</div><input id="pl-phone" placeholder="05xxxxxxxx" type="tel"></div>
+      <div class="form-group"><div class="form-label">العمر (سنة) *</div><input type="number" id="pl-age" placeholder="12" min="4" max="99"></div>
+      <div class="form-group"><div class="form-label">جوال ولي الأمر *</div><input id="pl-phone" placeholder="05xxxxxxxx" type="tel"></div>
     </div>
+    <div class="form-group"><div class="form-label">جوال الطوارئ (اختياري)</div><input id="pl-phone2" placeholder="05xxxxxxxx — رقم بديل للتواصل" type="tel"></div>
     <div class="form-grid">
       <div class="form-group"><div class="form-label">المجموعة</div><select id="pl-group"><option value="">— اختر —</option></select></div>
-      <div class="form-group"><div class="form-label">المركز</div>
+      <div class="form-group"><div class="form-label">المركز *</div>
         <select id="pl-pos">
           <option value="لا يوجد">لا يوجد</option><option value="مهاجم">مهاجم</option><option value="وسط">وسط</option>
           <option value="مدافع">مدافع</option><option value="حارس مرمى">حارس مرمى</option><option value="جناح">جناح</option>
@@ -948,7 +949,7 @@ function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
   $('pl-id').value=p.id;$('pl-fname').value=p.fname;$('pl-lname').value=p.lname;
-  $('pl-age').value=p.age||'';$('pl-phone').value=p.phone||'';
+  $('pl-age').value=p.age||'';$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';
   $('pl-notes').value=p.notes||'';
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
@@ -983,19 +984,25 @@ function initDocCheckbox(id,checked){
 }
 function savePlayer(){
   const fn=$('pl-fname').value.trim(),ln=$('pl-lname').value.trim();
-  if(!fn||!ln){showNotif('يرجى إدخال الاسم','red');return;}
+  const age=$('pl-age').value.trim();
+  const phone=$('pl-phone').value.trim();
+  const pos=$('pl-pos').value;
+  if(!fn||!ln){showNotif('يرجى إدخال الاسم كاملاً','red');return;}
+  if(!age){showNotif('يرجى إدخال عمر اللاعب','red');return;}
+  if(!phone){showNotif('يرجى إدخال رقم الجوال','red');return;}
+  if(!pos||pos==='لا يوجد'){showNotif('يرجى تحديد مركز اللاعب','red');return;}
   const pid=$('pl-id').value;
   if(pid){
     // edit
     const p=players.find(x=>x.id==pid);if(!p)return;
     p.fname=fn;p.lname=ln;p.age=parseInt($('pl-age').value)||null;
-    p.phone=$('pl-phone').value.trim();p.groupId=$('pl-group').value||null;
+    p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.groupId=$('pl-group').value||null;
     p.position=$('pl-pos').value||'لا يوجد';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
     save('players',players);logActivity(buildNotif('edit',fn+' '+ln),'var(--amber)');
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
@@ -1003,7 +1010,7 @@ function savePlayer(){
       health:false
     }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
-    closeModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
+    closeModal('player');['pl-fname','pl-lname','pl-phone','pl-phone2','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
     renderPlayers();renderDashboard();showNotif(`تم إضافة ${fn} ✓`,'green');
   }
 }
@@ -1041,6 +1048,7 @@ function renderPlayers(){
           ${p.age?`<span>${p.age} سنة</span>`:''}
           ${g?`<span class="badge badge-blue" style="font-size:9px">${g.name}</span>`:''}
           ${p.position&&p.position!=='لا يوجد'?`<span style="color:var(--muted)">${p.position}</span>`:''}
+          ${p.phone2?`<span style="color:var(--muted);direction:ltr">${p.phone2} 🆘</span>`:''}
           <span style="color:${statColor}">● ${p.status}</span>
         </div>
         ${p.docs?`<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
