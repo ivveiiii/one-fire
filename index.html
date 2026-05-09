@@ -314,32 +314,41 @@ select{cursor:pointer;background-image:none}
 
     <!-- ATTENDANCE -->
     <div class="page" id="page-attendance">
-      <div class="tabs">
-        <div class="tab active" onclick="switchAttTab('today',this)">حضور اليوم</div>
-        <div class="tab" onclick="switchAttTab('history',this)">السجل الشهري</div>
+      <!-- Day selector -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-fire" style="flex:1;justify-content:center" id="day-btn-0" onclick="selectTrainingDay(0)">الأحد</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center" id="day-btn-2" onclick="selectTrainingDay(2)">الثلاثاء</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center" id="day-btn-3" onclick="selectTrainingDay(3)">الأربعاء</button>
       </div>
-      <div id="att-today-view">
-        <div class="card" style="padding:12px 14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-            <span class="badge badge-green" id="att-count-badge" style="font-size:12px;padding:4px 12px">0 / 0</span>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-sm btn-green" onclick="markAll(true)"><i class="ti ti-check"></i> كل حاضر</button>
-              <button class="btn btn-sm btn-red" onclick="markAll(false)"><i class="ti ti-x"></i> تصفير</button>
-            </div>
+      <!-- Selected date info -->
+      <div class="card" style="padding:12px 16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:13px;font-weight:600" id="att-day-label">—</div>
+            <div style="font-size:11px;color:var(--muted)" id="att-date-label">—</div>
           </div>
-          <div id="att-today-body"></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="badge badge-green" id="att-count-badge" style="font-size:12px;padding:4px 12px">0 / 0</span>
+            <button class="btn btn-sm btn-green" onclick="markAllForDate(true)"><i class="ti ti-check"></i> كل حاضر</button>
+            <button class="btn btn-sm btn-red" onclick="markAllForDate(false)"><i class="ti ti-x"></i> تصفير</button>
+          </div>
         </div>
       </div>
-      <div id="att-history-view" style="display:none">
-        <div class="card">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <!-- Players list -->
+      <div class="card" style="padding:0 0 8px">
+        <div id="att-today-body" style="padding:0 4px"></div>
+      </div>
+      <!-- Full report -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📊 سجل الحضور الكامل</span>
+          <div style="display:flex;gap:6px;align-items:center">
             <button class="icon-btn" onclick="changeMonth(-1)"><i class="ti ti-chevron-right"></i></button>
-            <span style="font-size:14px;font-weight:600" id="month-label"></span>
+            <span style="font-size:13px;font-weight:600" id="month-label"></span>
             <button class="icon-btn" onclick="changeMonth(1)"><i class="ti ti-chevron-left"></i></button>
           </div>
-          <select id="hist-player" onchange="renderHistory()" style="margin-bottom:14px"><option value="">اختر لاعباً</option></select>
-          <div id="history-content"><div class="empty"><i class="ti ti-calendar"></i><p>اختر لاعباً</p></div></div>
         </div>
+        <div id="att-full-report"></div>
       </div>
     </div>
 
@@ -1077,13 +1086,128 @@ function renderPlayers(){
 // ============================================================
 //  ATTENDANCE
 // ============================================================
-function switchAttTab(tab,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  $('att-today-view').style.display=tab==='today'?'block':'none';
-  $('att-history-view').style.display=tab==='history'?'block':'none';
-  if(tab==='history')renderHistory();
+function switchAttTab(tab,el){} // removed - new UI
+
+let currentAttDate = todayStr();
+
+function selectTrainingDay(dayNum){
+  // Find closest date with this day (current or past week)
+  const today=new Date();
+  const todayDay=today.getDay();
+  let diff=(todayDay-dayNum+7)%7;
+  if(diff===0) diff=0; // today
+  const target=new Date(today);
+  target.setDate(today.getDate()-diff);
+  currentAttDate=target.toISOString().split('T')[0];
+  // Update buttons
+  [0,2,3].forEach(d=>{
+    const btn=$('day-btn-'+d);
+    if(btn)btn.className='btn '+(d===dayNum?'btn-fire':'btn-outline')+' btn-sm';
+  });
+  renderAttForSelectedDate();
+}
+
+function renderAttForSelectedDate(){
+  const dayNames={0:'الأحد',1:'الاثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت'};
+  const d=new Date(currentAttDate);
+  const dayName=dayNames[d.getDay()]||'';
+  const lbl=$('att-day-label');
+  const dlbl=$('att-date-label');
+  if(lbl)lbl.textContent='تسجيل حضور — '+dayName;
+  if(dlbl)dlbl.textContent=fmtDate(currentAttDate);
+  const body=$('att-today-body');
+  if(!players.length){body.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';updateAttBadge();return;}
+  const sorted=[...players].sort((a,b)=>{
+    const aP=!!attendance[currentAttDate+'_'+a.id];
+    const bP=!!attendance[currentAttDate+'_'+b.id];
+    return aP===bP?0:aP?1:-1;
+  });
+  body.innerHTML=sorted.map(p=>{
+    const key=currentAttDate+'_'+p.id;
+    const present=!!attendance[key];
+    const g=groups.find(x=>x.id==p.groupId);
+    return`<div class="att-row">
+      <div class="avatar av-sm">${getInitials(p.fname+' '+p.lname)}</div>
+      <div class="att-row-info">
+        <div class="att-row-name">${p.fname} ${p.lname}</div>
+        <div class="att-row-sub">${g?g.name:''}</div>
+      </div>
+      <button class="att-toggle ${present?'att-present':'att-absent'}" onclick="toggleAttDate(${p.id},'${currentAttDate}',this)">
+        ${present?'✓ حاضر':'✗ غائب'}
+      </button>
+    </div>`;
+  }).join('');
+  updateAttBadge();
+  renderFullReport();
+}
+
+function toggleAttDate(pid,date,btn){
+  const key=date+'_'+pid;
+  attendance[key]=!attendance[key];
+  save('attendance',attendance);
+  const present=attendance[key];
+  btn.className='att-toggle '+(present?'att-present':'att-absent');
+  btn.textContent=present?'✓ حاضر':'✗ غائب';
+  updateAttBadge();
+  updateDashAtt();
+  renderFullReport();
+}
+
+function markAllForDate(val){
+  players.forEach(p=>{attendance[currentAttDate+'_'+p.id]=val;});
+  save('attendance',attendance);
+  renderAttForSelectedDate();
+  updateDashAtt();
+  showNotif(val?'تم تسجيل حضور الجميع ✓':'تم مسح الحضور','green');
+}
+
+function renderFullReport(){
+  const el=$('att-full-report');
+  if(!el)return;
+  if(!players.length){el.innerHTML='<div class="empty" style="padding:16px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';return;}
+  // Get all training dates in current month
+  const year=histYear,month=histMonth;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthStr=`${year}-${String(month+1).padStart(2,'0')}`;
+  // Find training days in this month
+  const trainingDates=[];
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${monthStr}-${String(d).padStart(2,'0')}`;
+    const day=new Date(dateStr).getDay();
+    if([0,2,3].includes(day)) trainingDates.push({dateStr,day,d});
+  }
+  if(!trainingDates.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px">لا توجد أيام تدريب في هذا الشهر</p>';return;}
+  const dayNames={0:'أحد',2:'ثلاثاء',3:'أربعاء'};
+  // Header
+  let html=`<div style="overflow-x:auto"><table style="min-width:100%"><thead><tr>
+    <th style="text-align:right;padding:8px 10px;color:var(--muted);font-size:11px;white-space:nowrap">اللاعب</th>
+    ${trainingDates.map(t=>`<th style="text-align:center;padding:6px 4px;color:var(--muted);font-size:10px;min-width:36px">${dayNames[t.day]}<br>${t.d}</th>`).join('')}
+    <th style="text-align:center;padding:8px 6px;color:var(--muted);font-size:11px">النسبة</th>
+  </tr></thead><tbody>`;
+  players.forEach(p=>{
+    let pr=0;
+    const cells=trainingDates.map(t=>{
+      const key=t.dateStr+'_'+p.id;
+      const present=!!attendance[key];
+      if(present)pr++;
+      return`<td style="text-align:center;padding:4px"><span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:${present?'var(--green)':'rgba(239,68,68,.15)'};color:${present?'#fff':'var(--red)'};font-size:11px;line-height:24px;text-align:center">${present?'✓':'✗'}</span></td>`;
+    }).join('');
+    const pct=trainingDates.length?Math.round(pr/trainingDates.length*100):0;
+    html+=`<tr>
+      <td style="padding:6px 10px;white-space:nowrap;font-size:12px">${p.fname} ${p.lname}</td>
+      ${cells}
+      <td style="text-align:center;padding:6px;font-size:12px;font-weight:600;color:${pct>=80?'var(--green)':pct>=60?'var(--amber)':'var(--red)'}">${pct}%</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  el.innerHTML=html;
 }
 function renderAttToday(){
+  const todayDay=new Date().getDay();
+  const trainDay=[0,2,3].includes(todayDay)?todayDay:0;
+  selectTrainingDay(trainDay);
+}
+function _oldRenderAttToday_unused(){
   const today=todayStr();const body=$('att-today-body');
   if(!players.length){body.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';updateAttBadge();return;}
   const sorted=[...players].sort((a,b)=>{const aP=!!attendance[today+'_'+a.id],bP=!!attendance[today+'_'+b.id];return aP===bP?0:aP?1:-1;});
@@ -1110,11 +1234,7 @@ function toggleAtt(pid,date,btn){
   btn.textContent=present?'✓ حاضر':'✗ غائب';
   updateAttBadge();updateDashAtt();
 }
-function markAll(val){
-  const today=todayStr();players.forEach(p=>{attendance[today+'_'+p.id]=val;});
-  save('attendance',attendance);renderAttToday();updateDashAtt();
-  showNotif(val?'تم تسجيل حضور الجميع ✓':'تم مسح الحضور','green');
-}
+function markAll(val){ markAllForDate(val); }
 function updateAttBadge(){
   const today=todayStr();const p=players.filter(x=>attendance[today+'_'+x.id]).length;
   $('att-count-badge').textContent=`${p} / ${players.length}`;
@@ -1125,6 +1245,7 @@ function updateDashAtt(){
 }
 function renderHistory(){
   $('month-label').textContent=MONTHS_AR[histMonth]+' '+histYear;
+  renderFullReport();
   const sel=$('hist-player'),val=sel.value;
   sel.innerHTML='<option value="">اختر لاعباً</option>'+players.map(p=>`<option value="${p.id}">${p.fname} ${p.lname}</option>`).join('');
   sel.value=val;const pid=parseInt(val);
