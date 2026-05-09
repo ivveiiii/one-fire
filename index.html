@@ -346,6 +346,29 @@ select{cursor:pointer;background-image:none}
         <div class="stat-card" style="--accent:var(--blue);padding:12px"><div class="stat-val" id="sub-rev" style="font-size:18px">0</div><div class="stat-label">الإيرادات</div></div>
       </div>
       <div id="subs-list"></div>
+      <!-- Expired Subscription WA Message -->
+      <div class="card" id="sub-wa-section" style="display:none">
+        <div class="card-title" style="margin-bottom:14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--wa)" style="vertical-align:-3px;margin-left:6px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          إرسال تنبيه انتهاء الاشتراك
+        </div>
+        <div class="form-group"><div class="form-label">اختر اللاعب *</div><select id="sub-wa-player" onchange="updateSubWAPreview()"><option value="">— اختر لاعباً —</option></select></div>
+        <div class="form-group"><div class="form-label">سبب التواصل</div>
+          <select id="sub-wa-reason" onchange="updateSubWAPreview()">
+            <option value="انتهى">الاشتراك انتهى</option>
+            <option value="قريب">الاشتراك ينتهي قريباً</option>
+            <option value="متأخر">الدفع متأخر</option>
+          </select>
+        </div>
+        <div class="form-group"><div class="form-label">ملاحظات إضافية (اختياري)</div><textarea id="sub-wa-notes" rows="2" placeholder="أي تفاصيل..." oninput="updateSubWAPreview()"></textarea></div>
+        <div style="margin-bottom:12px"><div class="form-label">معاينة الرسالة</div>
+          <div id="sub-wa-preview" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;line-height:1.8;white-space:pre-wrap;color:var(--muted);max-height:180px;overflow-y:auto">اختر لاعباً لعرض المعاينة...</div>
+        </div>
+        <button class="btn btn-wa-all btn-full" onclick="sendSubWAMsg()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          إرسال رسالة واتساب
+        </button>
+      </div>
     </div>
 
     <!-- MATCHES -->
@@ -625,17 +648,58 @@ select{cursor:pointer;background-image:none}
 <div class="notif" id="notif"></div>
 
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 // ============================================================
-//  STORAGE (localStorage)
+//  STORAGE — localStorage أولاً، Firebase في الخلفية
 // ============================================================
 const DB={
   load(k,d){try{const v=localStorage.getItem('onfire_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
   save(k,v){localStorage.setItem('onfire_'+k,JSON.stringify(v));}
 };
 
-async function fbSave(key, value) { DB.save(key, value); }
-async function fbLoad(key, def) { return DB.load(key, def); }
+// Firebase init
+let db = null;
+try {
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFVwa5edJPTKTocuRkxmOM8wZNu4H5ntY",
+    authDomain: "one-fire-3cd79.firebaseapp.com",
+    databaseURL: "https://one-fire-3cd79-default-rtdb.firebaseio.com",
+    projectId: "one-fire-3cd79",
+    storageBucket: "one-fire-3cd79.firebasestorage.app",
+    messagingSenderId: "356509741618",
+    appId: "1:356509741618:web:93974290aa61864749822b"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch(e) { console.log('Firebase init failed:', e); }
+
+// Save: localStorage فوراً + Firebase في الخلفية
+function fbSave(key, value) {
+  DB.save(key, value); // save locally immediately
+  if(!db) return;
+  try { db.ref('academy/' + key).set(value).catch(e=>console.log('FB save err',e)); } catch(e){}
+}
+
+// Load: من Firebase إذا متاح، وإلا من localStorage
+async function fbLoad(key, def) {
+  DB.load(key, def); // preload from local
+  if(!db) return DB.load(key, def);
+  try {
+    const snap = await Promise.race([
+      db.ref('academy/'+key).get(),
+      new Promise((_,r)=>setTimeout(()=>r('timeout'),3000))
+    ]);
+    if(snap==='timeout') return DB.load(key, def);
+    if(snap.exists()){
+      const val=snap.val();
+      DB.save(key, val); // update local cache
+      return val;
+    }
+    return def;
+  } catch(e){ return DB.load(key, def); }
+}
 
 // Load all data from Firebase
 async function loadAllData(){
@@ -661,7 +725,7 @@ async function loadAllData(){
 }
 
 // Unified save to Firebase
-function save(key,value){ DB.save(key,value); fbSave(key,value); }
+function save(key,value){ fbSave(key,value); }
 
 // Default users — passwords stored as plain text (simple academy use)
 let users = DB.load('users',[
@@ -932,7 +996,10 @@ function savePlayer(){
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{id:$('doc-id').checked,iqama:$('doc-iqama').checked,family:$('doc-family').checked,terms:$('doc-terms').checked,health:$('doc-health').checked}};
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+      id:!!$('doc-id').checked,iqama:!!$('doc-iqama').checked,
+      family:!!$('doc-family').checked,terms:!!$('doc-terms').checked,health:!!$('doc-health').checked
+    }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
     closeModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
     renderPlayers();renderDashboard();showNotif(`تم إضافة ${fn} ✓`,'green');
@@ -1121,6 +1188,76 @@ function renderSubs(){
       </div>
     </div>`;
   }).join('');
+}
+function toggleSubWASection(){
+  const s=$('sub-wa-section');
+  s.style.display=s.style.display==='none'?'block':'none';
+  if(s.style.display==='block'){
+    const sel=$('sub-wa-player');
+    sel.innerHTML='<option value="">— اختر لاعباً —</option>'+players.filter(p=>p.phone).map(p=>`<option value="${p.id}">${p.fname} ${p.lname}</option>`).join('');
+    $('sub-wa-preview').textContent='اختر لاعباً لعرض المعاينة...';
+    $('sub-wa-preview').style.color='var(--muted)';
+  }
+}
+function updateSubWAPreview(){
+  const pid=parseInt($('sub-wa-player').value);
+  const p=players.find(x=>x.id===pid);
+  if(!p){$('sub-wa-preview').textContent='اختر لاعباً لعرض المعاينة...';$('sub-wa-preview').style.color='var(--muted)';return;}
+  const reason=$('sub-wa-reason').value;
+  const notes=$('sub-wa-notes').value.trim();
+  const academy=settings.name||'أكاديمية ون فاير';
+  const reasonMap={انتهى:'قد انتهى',قريب:'سينتهي قريباً',متأخر:'متأخر السداد'};
+  let msg=`السلام عليكم ورحمة الله وبركاته 🔥
+
+نود إعلامكم بأن اشتراك اللاعب *${p.fname} ${p.lname}* في *${academy}* ${reasonMap[reason]}.
+
+`;
+  if(reason==='انتهى')msg+=`يرجى التواصل معنا لتجديد الاشتراك والاستمرار في التدريب.
+
+`;
+  if(reason==='قريب')msg+=`يرجى المبادرة بتجديد الاشتراك قبل انتهاء المدة.
+
+`;
+  if(reason==='متأخر')msg+=`يرجى سداد رسوم الاشتراك في أقرب وقت ممكن.
+
+`;
+  if(notes)msg+=`📝 ${notes}
+
+`;
+  msg+=`مع تحيات،
+*${academy}*`;
+  $('sub-wa-preview').textContent=msg;
+  $('sub-wa-preview').style.color='var(--text)';
+}
+function sendSubWAMsg(){
+  const pid=parseInt($('sub-wa-player').value);
+  const p=players.find(x=>x.id===pid);
+  if(!p||!p.phone){showNotif('اختر لاعباً بجوال مسجل','red');return;}
+  const reason=$('sub-wa-reason').value;
+  const notes=$('sub-wa-notes').value.trim();
+  const academy=settings.name||'أكاديمية ون فاير';
+  const reasonMap={انتهى:'قد انتهى',قريب:'سينتهي قريباً',متأخر:'متأخر السداد'};
+  let msg=`السلام عليكم ورحمة الله وبركاته 🔥
+
+نود إعلامكم بأن اشتراك اللاعب *${p.fname} ${p.lname}* في *${academy}* ${reasonMap[reason]}.
+
+`;
+  if(reason==='انتهى')msg+=`يرجى التواصل معنا لتجديد الاشتراك والاستمرار في التدريب.
+
+`;
+  if(reason==='قريب')msg+=`يرجى المبادرة بتجديد الاشتراك قبل انتهاء المدة.
+
+`;
+  if(reason==='متأخر')msg+=`يرجى سداد رسوم الاشتراك في أقرب وقت ممكن.
+
+`;
+  if(notes)msg+=`📝 ${notes}
+
+`;
+  msg+=`مع تحيات،
+*${academy}*`;
+  window.open('https://wa.me/'+formatPhone(p.phone)+'?text='+encodeURIComponent(msg),'_blank');
+  showNotif('تم فتح واتساب ✓','wa');
 }
 function renewSub(sid){
   const s=subscriptions.find(x=>x.id===sid);
