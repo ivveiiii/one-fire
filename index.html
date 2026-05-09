@@ -509,21 +509,17 @@ select{cursor:pointer;background-image:none}
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600">📎 التحقق من المستندات</div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <!-- Toggle 1: الهوية/الإقامة -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
           <span style="font-size:13px">تم استلام الهوية / الإقامة / كرت العائلة</span>
-          <div onclick="toggleDocSwitch('doc-id')" id="sw-doc-id" style="width:46px;height:26px;border-radius:13px;background:var(--red);cursor:pointer;position:relative;transition:background .3s;flex-shrink:0">
-            <div id="sw-doc-id-thumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .3s"></div>
+          <div id="sw-doc-id" data-on="0" onclick="toggleSw('doc-id')" style="width:50px;height:28px;border-radius:14px;background:#EF4444;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0;border:2px solid rgba(0,0,0,.2)">
+            <div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:1px;right:1px;transition:right .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)" id="th-doc-id"></div>
           </div>
-          <input type="checkbox" id="doc-id" style="display:none">
         </div>
-        <!-- Toggle 2: الشروط والسياسات -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
           <span style="font-size:13px">اطلع على الشروط والسياسات</span>
-          <div onclick="toggleDocSwitch('doc-terms')" id="sw-doc-terms" style="width:46px;height:26px;border-radius:13px;background:var(--red);cursor:pointer;position:relative;transition:background .3s;flex-shrink:0">
-            <div id="sw-doc-terms-thumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .3s"></div>
+          <div id="sw-doc-terms" data-on="0" onclick="toggleSw('doc-terms')" style="width:50px;height:28px;border-radius:14px;background:#EF4444;cursor:pointer;position:relative;transition:all .3s;flex-shrink:0;border:2px solid rgba(0,0,0,.2)">
+            <div style="width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:1px;right:1px;transition:right .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)" id="th-doc-terms"></div>
           </div>
-          <input type="checkbox" id="doc-terms" style="display:none">
         </div>
       </div>
     </div>
@@ -965,25 +961,25 @@ function openEditPlayer(id){
   },50);
   $('modal-player').classList.add('open');
 }
-function toggleDocSwitch(id){
-  const cb=$(id);
-  cb.checked=!cb.checked;
-  updateSwitch(id,cb.checked);
+function toggleSw(key){
+  const sw=$('sw-'+key);
+  const on=sw.dataset.on==='1';
+  setSwitch(key,!on);
 }
-function updateSwitch(id,checked){
-  const sw=$('sw-'+id);const thumb=$('sw-'+id+'-thumb');
-  if(!sw||!thumb)return;
-  if(checked){
-    sw.style.background='var(--green)';
-    thumb.style.right='23px';
-  } else {
-    sw.style.background='var(--red)';
-    thumb.style.right='3px';
-  }
+function setSwitch(key,on){
+  const sw=$('sw-'+key);
+  const th=$('th-'+key);
+  if(!sw||!th)return;
+  sw.dataset.on=on?'1':'0';
+  sw.style.background=on?'#22C55E':'#EF4444';
+  th.style.right=on?'25px':'1px';
+}
+function getSwitch(key){
+  const sw=$('sw-'+key);
+  return sw&&sw.dataset.on==='1';
 }
 function initDocCheckbox(id,checked){
-  const cb=$(id);if(cb)cb.checked=checked;
-  updateSwitch(id,checked);
+  setSwitch(id,!!checked);
 }
 function savePlayer(){
   const fn=$('pl-fname').value.trim(),ln=$('pl-lname').value.trim();
@@ -1000,10 +996,10 @@ function savePlayer(){
   } else {
     // add
     const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
-      id:$('doc-id').checked===true,
-      iqama:$('doc-id').checked===true,
-      family:$('doc-id').checked===true,
-      terms:$('doc-terms').checked===true,
+      id:getSwitch('doc-id'),
+      iqama:getSwitch('doc-id'),
+      family:getSwitch('doc-id'),
+      terms:getSwitch('doc-terms'),
       health:false
     }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
