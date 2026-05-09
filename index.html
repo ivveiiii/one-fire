@@ -478,28 +478,33 @@ select{cursor:pointer;background-image:none}
     </div>
     <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="pl-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
     <!-- Documents verification -->
-    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">📎 التحقق من المستندات</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="doc-id" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
-          <span>✅ تم استلام صورة الهوية الوطنية</span>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600">📎 التحقق من المستندات</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label onclick="toggleDoc('doc-id')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-id">
+          <div id="doc-id-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
+          <span style="font-size:14px">صورة الهوية الوطنية</span>
+          <input type="checkbox" id="doc-id" style="display:none">
         </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="doc-iqama" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
-          <span>✅ تم استلام صورة الإقامة</span>
+        <label onclick="toggleDoc('doc-iqama')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-iqama">
+          <div id="doc-iqama-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
+          <span style="font-size:14px">صورة الإقامة</span>
+          <input type="checkbox" id="doc-iqama" style="display:none">
         </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="doc-family" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
-          <span>✅ تم استلام كرت العائلة</span>
+        <label onclick="toggleDoc('doc-family')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-family">
+          <div id="doc-family-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
+          <span style="font-size:14px">كرت العائلة</span>
+          <input type="checkbox" id="doc-family" style="display:none">
         </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="doc-terms" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
-          <span>✅ وقّع ولي الأمر على الشروط والأحكام</span>
+        <label onclick="toggleDoc('doc-terms')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-terms">
+          <div id="doc-terms-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
+          <span style="font-size:14px">وقّع على الشروط والأحكام</span>
+          <input type="checkbox" id="doc-terms" style="display:none">
         </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="doc-health" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
-          <span>✅ تم الاطلاع على الحالة الصحية</span>
+        <label onclick="toggleDoc('doc-health')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-health">
+          <div id="doc-health-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
+          <span style="font-size:14px">الاطلاع على الحالة الصحية</span>
+          <input type="checkbox" id="doc-health" style="display:none">
         </label>
       </div>
     </div>
@@ -558,6 +563,28 @@ select{cursor:pointer;background-image:none}
     <div style="display:flex;gap:10px">
       <button class="btn btn-fire" style="flex:1" onclick="addCoach()"><i class="ti ti-check"></i> إضافة</button>
       <button class="btn btn-outline" onclick="closeModal('coach')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Coach -->
+<div class="modal-overlay" id="modal-edit-coach">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ تعديل بيانات المدرب</div>
+    <input type="hidden" id="ec-id">
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">الاسم *</div><input id="ec-name" placeholder="اسم المدرب"></div>
+      <div class="form-group"><div class="form-label">التخصص</div><input id="ec-spec" placeholder="تدريب هجومي"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><div class="form-label">الجوال</div><input id="ec-phone" placeholder="05xxxxxxxx" type="tel"></div>
+      <div class="form-group"><div class="form-label">الخبرة</div><input id="ec-exp" placeholder="5 سنوات"></div>
+    </div>
+    <div class="form-group"><div class="form-label">المجموعة</div><select id="ec-group"><option value="">— غير محدد —</option></select></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-fire" style="flex:1" onclick="saveEditCoach()"><i class="ti ti-check"></i> حفظ التعديلات</button>
+      <button class="btn btn-outline" onclick="closeModal('edit-coach')">إلغاء</button>
     </div>
   </div>
 </div>
@@ -861,9 +888,35 @@ function openEditPlayer(id){
   $('pl-status-group').style.display='block';$('pl-status').value=p.status||'نشط';
   // Load docs
   const d=p.docs||{};
-  $('doc-id').checked=!!d.id;$('doc-iqama').checked=!!d.iqama;
-  $('doc-family').checked=!!d.family;$('doc-terms').checked=!!d.terms;$('doc-health').checked=!!d.health;
+  setTimeout(()=>{
+    initDocCheckbox('doc-id',!!d.id);initDocCheckbox('doc-iqama',!!d.iqama);
+    initDocCheckbox('doc-family',!!d.family);initDocCheckbox('doc-terms',!!d.terms);
+    initDocCheckbox('doc-health',!!d.health);
+  },50);
   $('modal-player').classList.add('open');
+}
+function toggleDoc(id){
+  const cb=$(id);cb.checked=!cb.checked;
+  const icon=$(id+'-icon');const lbl=$(id.replace('doc-','lbl-doc-'));
+  if(cb.checked){
+    icon.textContent='✓';icon.style.background='var(--green)';icon.style.borderColor='var(--green)';icon.style.color='#fff';
+    lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';
+  } else {
+    icon.textContent='';icon.style.background='transparent';icon.style.borderColor='var(--border)';
+    lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';
+  }
+}
+function initDocCheckbox(id, checked){
+  const cb=$(id);if(cb)cb.checked=checked;
+  const icon=$(id+'-icon');const lbl=$(id.replace('doc-','lbl-doc-'));
+  if(!icon||!lbl)return;
+  if(checked){
+    icon.textContent='✓';icon.style.background='var(--green)';icon.style.borderColor='var(--green)';icon.style.color='#fff';
+    lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';
+  } else {
+    icon.textContent='';icon.style.background='transparent';icon.style.borderColor='var(--border)';
+    lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';
+  }
 }
 function savePlayer(){
   const fn=$('pl-fname').value.trim(),ln=$('pl-lname').value.trim();
@@ -932,6 +985,7 @@ function renderPlayers(){
       </div>
       <div class="player-row-actions">
         <button class="btn btn-xs btn-blue" onclick="openEditPlayer(${p.id})"><i class="ti ti-edit"></i></button>
+        ${p.phone&&sub&&new Date(sub.end)<new Date()?`<button class="btn btn-xs btn-wa" onclick="sendSubExpiredWA(${p.id})" title="إشعار انتهاء الاشتراك"><svg width="12" height="12" viewBox="0 0 24 24" fill="var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button>`:''}
         ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-xs btn-red" onclick="deletePlayer(${p.id})"><i class="ti ti-trash"></i></button>`:''}
       </div>
     </div>`;
