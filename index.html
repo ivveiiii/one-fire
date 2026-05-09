@@ -220,8 +220,13 @@ select{cursor:pointer;background-image:none}
       <div class="login-sub">أكاديمية كرة القدم</div>
     </div>
     <div class="login-card">
-      <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;">
-        <i class="ti ti-login"></i> دخول للنظام
+      <div class="form-group">
+        <div class="form-label" style="color:rgba(255,255,255,.5);text-align:center">رمز الدخول</div>
+        <input type="password" id="login-pass" placeholder="• • • •" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
+        <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none">رمز غير صحيح</div>
+      </div>
+      <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:4px">
+        <i class="ti ti-login"></i> دخول
       </button>
     </div>
   </div>
@@ -500,35 +505,26 @@ select{cursor:pointer;background-image:none}
       <select id="pl-status"><option value="نشط">نشط</option><option value="موقوف">موقوف</option><option value="منتهي">منتهي الاشتراك</option></select>
     </div>
     <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="pl-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
-    <!-- Documents verification -->
+    <!-- Documents verification — 2 toggles -->
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600">📎 التحقق من المستندات</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <label onclick="toggleDoc('doc-id')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-id">
-          <div id="doc-id-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
-          <span style="font-size:14px">صورة الهوية الوطنية</span>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <!-- Toggle 1: الهوية/الإقامة -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+          <span style="font-size:13px">تم استلام الهوية / الإقامة / كرت العائلة</span>
+          <div onclick="toggleDocSwitch('doc-id')" id="sw-doc-id" style="width:46px;height:26px;border-radius:13px;background:var(--red);cursor:pointer;position:relative;transition:background .3s;flex-shrink:0">
+            <div id="sw-doc-id-thumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .3s"></div>
+          </div>
           <input type="checkbox" id="doc-id" style="display:none">
-        </label>
-        <label onclick="toggleDoc('doc-iqama')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-iqama">
-          <div id="doc-iqama-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
-          <span style="font-size:14px">صورة الإقامة</span>
-          <input type="checkbox" id="doc-iqama" style="display:none">
-        </label>
-        <label onclick="toggleDoc('doc-family')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-family">
-          <div id="doc-family-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
-          <span style="font-size:14px">كرت العائلة</span>
-          <input type="checkbox" id="doc-family" style="display:none">
-        </label>
-        <label onclick="toggleDoc('doc-terms')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-terms">
-          <div id="doc-terms-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
-          <span style="font-size:14px">وقّع على الشروط والأحكام</span>
+        </div>
+        <!-- Toggle 2: الشروط والسياسات -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+          <span style="font-size:13px">اطلع على الشروط والسياسات</span>
+          <div onclick="toggleDocSwitch('doc-terms')" id="sw-doc-terms" style="width:46px;height:26px;border-radius:13px;background:var(--red);cursor:pointer;position:relative;transition:background .3s;flex-shrink:0">
+            <div id="sw-doc-terms-thumb" style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .3s"></div>
+          </div>
           <input type="checkbox" id="doc-terms" style="display:none">
-        </label>
-        <label onclick="toggleDoc('doc-health')" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);transition:all .2s" id="lbl-doc-health">
-          <div id="doc-health-icon" style="width:26px;height:26px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:all .2s"></div>
-          <span style="font-size:14px">الاطلاع على الحالة الصحية</span>
-          <input type="checkbox" id="doc-health" style="display:none">
-        </label>
+        </div>
       </div>
     </div>
     <div style="display:flex;gap:10px">
@@ -740,6 +736,17 @@ let selectedUserId = null;
 function renderLoginUsers(){} // removed — single password login
 function selectUser(uid){} // removed
 async function doLogin(){
+  const passEl=document.getElementById('login-pass');
+  const errEl=document.getElementById('login-err');
+  if(passEl){
+    const pass=passEl.value.trim();
+    if(pass&&pass!=='305'){
+      if(errEl)errEl.style.display='block';
+      passEl.value='';passEl.focus();
+      return;
+    }
+    if(errEl)errEl.style.display='none';
+  }
   currentUser={id:'user',name:'المستخدم',role:'admin'};
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -953,43 +960,30 @@ function openEditPlayer(id){
   // Load docs
   const d=p.docs||{};
   setTimeout(()=>{
-    initDocCheckbox('doc-id',!!d.id);initDocCheckbox('doc-iqama',!!d.iqama);
-    initDocCheckbox('doc-family',!!d.family);initDocCheckbox('doc-terms',!!d.terms);
-    initDocCheckbox('doc-health',!!d.health);
+    initDocCheckbox('doc-id',!!(d.id||d.iqama||d.family));
+    initDocCheckbox('doc-terms',!!d.terms);
   },50);
   $('modal-player').classList.add('open');
 }
-function toggleDoc(id){
+function toggleDocSwitch(id){
   const cb=$(id);
   cb.checked=!cb.checked;
-  cb.value=cb.checked?'1':'0';
-  const icon=$(id+'-icon');
-  const lbl=$(id.replace('doc-','lbl-doc-'));
-  if(cb.checked){
-    icon.textContent='✓';
-    icon.style.background='var(--green)';
-    icon.style.borderColor='var(--green)';
-    icon.style.color='#fff';
-    if(lbl){lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';}
+  updateSwitch(id,cb.checked);
+}
+function updateSwitch(id,checked){
+  const sw=$('sw-'+id);const thumb=$('sw-'+id+'-thumb');
+  if(!sw||!thumb)return;
+  if(checked){
+    sw.style.background='var(--green)';
+    thumb.style.right='23px';
   } else {
-    icon.textContent='';
-    icon.style.background='transparent';
-    icon.style.borderColor='var(--border)';
-    icon.style.color='';
-    if(lbl){lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';}
+    sw.style.background='var(--red)';
+    thumb.style.right='3px';
   }
 }
-function initDocCheckbox(id, checked){
+function initDocCheckbox(id,checked){
   const cb=$(id);if(cb)cb.checked=checked;
-  const icon=$(id+'-icon');const lbl=$(id.replace('doc-','lbl-doc-'));
-  if(!icon||!lbl)return;
-  if(checked){
-    icon.textContent='✓';icon.style.background='var(--green)';icon.style.borderColor='var(--green)';icon.style.color='#fff';
-    lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';
-  } else {
-    icon.textContent='';icon.style.background='transparent';icon.style.borderColor='var(--border)';
-    lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';
-  }
+  updateSwitch(id,checked);
 }
 function savePlayer(){
   const fn=$('pl-fname').value.trim(),ln=$('pl-lname').value.trim();
@@ -1007,10 +1001,10 @@ function savePlayer(){
     // add
     const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:$('doc-id').checked===true,
-      iqama:$('doc-iqama').checked===true,
-      family:$('doc-family').checked===true,
+      iqama:$('doc-id').checked===true,
+      family:$('doc-id').checked===true,
       terms:$('doc-terms').checked===true,
-      health:$('doc-health').checked===true
+      health:false
     }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
     closeModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
