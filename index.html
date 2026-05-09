@@ -14,7 +14,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--dark);color:var(--text);d
 
 /* ── LOGIN ── */
 #login-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden}
-#login-bg{position:absolute;inset:0;background-image:url('bg.jpg.jpg');background-size:cover;background-position:center top;filter:brightness(0.35)}
+#login-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/ivveiiii/one-fire/main/bg.jpg.jpg');background-size:cover;background-position:center top;filter:brightness(0.35)}
 #login-screen::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.4) 0%,rgba(10,10,10,0.85) 100%)}
 .login-box{width:100%;max-width:380px;position:relative;z-index:2}
 .login-logo{text-align:center;margin-bottom:28px}
@@ -482,6 +482,32 @@ select{cursor:pointer;background-image:none}
       <select id="pl-status"><option value="نشط">نشط</option><option value="موقوف">موقوف</option><option value="منتهي">منتهي الاشتراك</option></select>
     </div>
     <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="pl-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
+    <!-- Documents verification -->
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">📎 التحقق من المستندات</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="doc-id" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
+          <span>✅ تم استلام صورة الهوية الوطنية</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="doc-iqama" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
+          <span>✅ تم استلام صورة الإقامة</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="doc-family" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
+          <span>✅ تم استلام كرت العائلة</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="doc-terms" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
+          <span>✅ وقّع ولي الأمر على الشروط والأحكام</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="doc-health" style="width:18px;height:18px;accent-color:var(--fire);cursor:pointer">
+          <span>✅ تم الاطلاع على الحالة الصحية</span>
+        </label>
+      </div>
+    </div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-fire" style="flex:1" onclick="savePlayer()"><i class="ti ti-check"></i> حفظ</button>
       <button class="btn btn-outline" onclick="closeModal('player')">إلغاء</button>
@@ -867,6 +893,10 @@ function openEditPlayer(id){
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
   $('pl-status-group').style.display='block';$('pl-status').value=p.status||'نشط';
+  // Load docs
+  const d=p.docs||{};
+  $('doc-id').checked=!!d.id;$('doc-iqama').checked=!!d.iqama;
+  $('doc-family').checked=!!d.family;$('doc-terms').checked=!!d.terms;$('doc-health').checked=!!d.health;
   $('modal-player').classList.add('open');
 }
 function savePlayer(){
@@ -883,7 +913,7 @@ function savePlayer(){
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr()};
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{id:$('doc-id').checked,iqama:$('doc-iqama').checked,family:$('doc-family').checked,terms:$('doc-terms').checked,health:$('doc-health').checked}};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
     closeModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
     renderPlayers();renderDashboard();showNotif(`تم إضافة ${fn} ✓`,'green');
@@ -925,6 +955,13 @@ function renderPlayers(){
           ${p.position&&p.position!=='لا يوجد'?`<span style="color:var(--muted)">${p.position}</span>`:''}
           <span style="color:${statColor}">● ${p.status}</span>
         </div>
+        ${p.docs?`<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+          <span style="font-size:10px;color:${p.docs.id?'var(--green)':'var(--red)'}">${p.docs.id?'✓':'✗'} هوية</span>
+          <span style="font-size:10px;color:${p.docs.iqama?'var(--green)':'var(--muted)'}">${p.docs.iqama?'✓':'○'} إقامة</span>
+          <span style="font-size:10px;color:${p.docs.family?'var(--green)':'var(--muted)'}">${p.docs.family?'✓':'○'} عائلة</span>
+          <span style="font-size:10px;color:${p.docs.terms?'var(--green)':'var(--red)'}">${p.docs.terms?'✓':'✗'} شروط</span>
+          <span style="font-size:10px;color:${p.docs.health?'var(--green)':'var(--muted)'}">${p.docs.health?'✓':'○'} صحة</span>
+        </div>`:''}`
         ${attT?`<div style="margin-top:5px;display:flex;align-items:center;gap:6px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:${pct}%;${pct<60?'background:var(--red)':pct<80?'background:var(--amber)':''}"></div></div><span style="font-size:10px;color:var(--muted)">${pct}%</span></div>`:''}
       </div>
       <div class="player-row-actions">
@@ -1054,8 +1091,12 @@ function renderSubs(){
         <span style="color:var(--fire);font-weight:600">${s.amount.toLocaleString()} ريال</span>
         <span style="color:var(--muted)">${s.payment}</span>
       </div>
-      <div style="display:flex;gap:6px;margin-top:10px">
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-xs btn-fire" onclick="renewSub(${s.id})">تجديد</button>
+        ${p&&p.phone&&(exp||s.status!=='نشط')?`<button class="btn btn-xs btn-wa" onclick="sendSubExpiredWA(${p.id})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          تنبيه انتهاء
+        </button>`:''}
         ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-xs btn-red" onclick="deleteSub(${s.id})"><i class="ti ti-trash"></i></button>`:''}
       </div>
     </div>`;
@@ -1068,6 +1109,21 @@ function renewSub(sid){
   base.setMonth(base.getMonth()+(map[s.type]||1));
   s.end=base.toISOString().split('T')[0];s.start=todayStr();s.status='نشط';
   save('subs',subscriptions);renderSubs();renderDashboard();showNotif('تم التجديد ✓','green');
+}
+function sendSubExpiredWA(pid){
+  const p=players.find(x=>x.id===pid);
+  if(!p||!p.phone){showNotif('لا يوجد رقم هاتف','red');return;}
+  const academy=settings.name||'أكاديمية ون فاير';
+  const msg=`السلام عليكم ورحمة الله وبركاته 🔥
+
+نود إعلامكم بأن اشتراك اللاعب *${p.fname} ${p.lname}* في ${academy} قد انتهى.
+
+يرجى التواصل معنا لتجديد الاشتراك والاستمرار في التدريب.
+
+مع تحيات،
+*${academy}*`;
+  window.open('https://wa.me/'+formatPhone(p.phone)+'?text='+encodeURIComponent(msg),'_blank');
+  showNotif('تم فتح واتساب ✓','wa');
 }
 function deleteSub(sid){
   if(!confirm('حذف هذا الاشتراك؟'))return;
