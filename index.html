@@ -960,14 +960,23 @@ function openEditPlayer(id){
   $('modal-player').classList.add('open');
 }
 function toggleDoc(id){
-  const cb=$(id);cb.checked=!cb.checked;
-  const icon=$(id+'-icon');const lbl=$(id.replace('doc-','lbl-doc-'));
+  const cb=$(id);
+  cb.checked=!cb.checked;
+  cb.value=cb.checked?'1':'0';
+  const icon=$(id+'-icon');
+  const lbl=$(id.replace('doc-','lbl-doc-'));
   if(cb.checked){
-    icon.textContent='✓';icon.style.background='var(--green)';icon.style.borderColor='var(--green)';icon.style.color='#fff';
-    lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';
+    icon.textContent='✓';
+    icon.style.background='var(--green)';
+    icon.style.borderColor='var(--green)';
+    icon.style.color='#fff';
+    if(lbl){lbl.style.borderColor='rgba(34,197,94,.3)';lbl.style.background='rgba(34,197,94,.05)';}
   } else {
-    icon.textContent='';icon.style.background='transparent';icon.style.borderColor='var(--border)';
-    lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';
+    icon.textContent='';
+    icon.style.background='transparent';
+    icon.style.borderColor='var(--border)';
+    icon.style.color='';
+    if(lbl){lbl.style.borderColor='var(--border)';lbl.style.background='var(--card)';}
   }
 }
 function initDocCheckbox(id, checked){
@@ -997,8 +1006,11 @@ function savePlayer(){
   } else {
     // add
     const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
-      id:!!$('doc-id').checked,iqama:!!$('doc-iqama').checked,
-      family:!!$('doc-family').checked,terms:!!$('doc-terms').checked,health:!!$('doc-health').checked
+      id:$('doc-id').checked===true,
+      iqama:$('doc-iqama').checked===true,
+      family:$('doc-family').checked===true,
+      terms:$('doc-terms').checked===true,
+      health:$('doc-health').checked===true
     }};
     players.push(p);save('players',players);logActivity(buildNotif('add',fn+' '+ln),'var(--green)');
     closeModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';
