@@ -221,19 +221,13 @@ select{cursor:pointer;background-image:none}
     </div>
     <div class="login-card">
       <div class="form-group">
-        <div class="form-label" style="color:rgba(255,255,255,.5);margin-bottom:8px">اختر المستخدم</div>
-        <div id="user-btns" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+        <div class="form-label" style="color:rgba(255,255,255,.6);text-align:center;margin-bottom:10px;font-size:13px">أدخل رمز الدخول</div>
+        <input type="tel" id="login-pass" placeholder="305" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif">
+        <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
       </div>
-      <div id="pass-section" style="display:none">
-        <div class="form-group">
-          <div class="form-label" style="color:rgba(255,255,255,.5);text-align:center">رمز الدخول</div>
-          <input type="password" id="login-pass" placeholder="• • • •" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:24px;letter-spacing:8px;padding:12px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff">
-          <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:6px;display:none">رمز غير صحيح</div>
-        </div>
-        <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:15px;padding:13px">
-          <i class="ti ti-login"></i> دخول
-        </button>
-      </div>
+      <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:4px">
+        <i class="ti ti-login"></i> دخول
+      </button>
     </div>
   </div>
 </div>
@@ -927,29 +921,18 @@ function renderLoginUsers(){
     </button>`).join('');
 }
 
-function selectUser(uid){
-  selectedUserId=uid;
-  document.querySelectorAll('[id^="ubtn-"]').forEach(b=>{
-    b.style.borderColor=b.id==='ubtn-'+uid?'var(--fire)':'rgba(255,255,255,.15)';
-    b.style.background=b.id==='ubtn-'+uid?'rgba(255,77,0,.15)':'rgba(255,255,255,.06)';
-  });
-  $('pass-section').style.display='block';
-  $('login-pass').value='';
-  $('login-err').style.display='none';
-  setTimeout(()=>$('login-pass').focus(),100);
-}
+function selectUser(uid){}
 async function doLogin(){
-  if(!selectedUserId){showNotif('اختر مستخدماً أولاً','red');return;}
-  const u=users.find(x=>x.id===selectedUserId);
   const pass=($('login-pass').value||'').trim();
-  if(!u||pass!==u.pass){
+  const MASTER_PASS='305';
+  if(pass!==MASTER_PASS){
     $('login-err').style.display='block';
     $('login-pass').value='';
     $('login-pass').focus();
     return;
   }
   $('login-err').style.display='none';
-  currentUser=u;
+  currentUser={id:'admin',name:'المدير',role:'admin',pass:MASTER_PASS};
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('app').style.flexDirection='column';
