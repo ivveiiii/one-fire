@@ -316,12 +316,27 @@ select{cursor:pointer;background-image:none}
 
     <!-- PLAYERS -->
     <div class="page" id="page-players">
-      <input type="text" id="player-search" placeholder="🔍  بحث باسم اللاعب أو رقمه..." oninput="renderPlayers()" style="margin-bottom:12px">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="player-search" placeholder="🔍  بحث..." oninput="renderPlayers()" style="flex:1">
+        <button class="btn btn-sm btn-blue" onclick="exportPlayers()"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
+      </div>
       <div class="form-grid" style="margin-bottom:12px">
         <select id="player-group-filter" onchange="renderPlayers()"><option value="">كل المجموعات</option></select>
         <select id="player-status-filter" onchange="renderPlayers()">
           <option value="">كل الحالات</option><option value="نشط">نشط</option><option value="منتهي">منتهي</option><option value="موقوف">موقوف</option>
         </select>
+      </div>
+      <!-- Import Section -->
+      <div id="import-section" style="display:none">
+        <div class="card" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.05)">
+          <div class="card-title" style="margin-bottom:12px"><i class="ti ti-file-import" style="color:var(--blue)"></i> استيراد لاعبين من Excel</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">الأعمدة المطلوبة: الاسم الأول، اسم العائلة، العمر، رقم الجوال، المركز</div>
+          <input type="file" id="import-file" accept=".csv,.xlsx,.xls" style="margin-bottom:10px" onchange="handleImport(this)">
+          <div id="import-preview" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn btn-sm btn-outline" style="flex:1" onclick="toggleImport()"><i class="ti ti-file-import"></i> استيراد من Excel</button>
       </div>
       <div id="players-list"></div>
     </div>
@@ -341,10 +356,11 @@ select{cursor:pointer;background-image:none}
             <div style="font-size:13px;font-weight:600" id="att-day-label">—</div>
             <div style="font-size:11px;color:var(--muted)" id="att-date-label">—</div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
             <span class="badge badge-green" id="att-count-badge" style="font-size:12px;padding:4px 12px">0 / 0</span>
             <button class="btn btn-sm btn-green" onclick="markAllForDate(true)"><i class="ti ti-check"></i> كل حاضر</button>
             <button class="btn btn-sm btn-red" onclick="markAllForDate(false)"><i class="ti ti-x"></i> تصفير</button>
+            <button class="btn btn-sm btn-blue" onclick="exportAttendance()"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
           </div>
         </div>
       </div>
@@ -2033,6 +2049,121 @@ function renderSettingsPage(){
   $('notif-edit').value=notifTexts.edit||'';$('notif-sub').value=notifTexts.sub||'';$('notif-match').value=notifTexts.match||'';
   applyRolePermissions();
 }
+// ── EXPORT FUNCTIONS ──
+function exportPlayers(){
+  const headers=['الاسم الأول','اسم العائلة','العمر','رقم الجوال','رقم الطوارئ','المجموعة','المركز','الحالة','رمز الحضور','تاريخ الانضمام'];
+  const rows=players.map(p=>{
+    const g=groups.find(x=>x.id==p.groupId);
+    return[p.fname,p.lname,p.age||'',p.phone||'',p.phone2||'',g?g.name:'',p.position||'',p.status||'',p.checkinCode||'',p.joinDate||''];
+  });
+  downloadCSV('لاعبو_الأكاديمية',headers,rows);
+}
+
+function exportAttendance(){
+  // Get training days in current display month
+  const year=histYear,month=histMonth;
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthStr=`${year}-${String(month+1).padStart(2,'0')}`;
+  const trainingDates=[];
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(year,month,d);
+    if([0,2,3].includes(date.getDay())){
+      const ds=`${monthStr}-${String(d).padStart(2,'0')}`;
+      trainingDates.push({ds,d,day:['أحد','','ثلاثاء','أربعاء'][date.getDay()]});
+    }
+  }
+  const headers=['اللاعب',...trainingDates.map(t=>t.day+' '+t.d),'الحضور','التأخير','الغياب','النسبة'];
+  const rows=players.map(p=>{
+    let pr=0,lt=0,ab=0;
+    const cells=trainingDates.map(t=>{
+      const st=getAttStatus(p.id,t.ds);
+      const time=getAttTime(p.id,t.ds);
+      if(st==='present')pr++;
+      else if(st==='late')lt++;
+      else ab++;
+      return st==='present'?'حاضر'+(time?' ('+time+')':''):st==='late'?'متأخر'+(time?' ('+time+')':''):'غائب';
+    });
+    const total=trainingDates.length;
+    const pct=total?Math.round((pr+lt)/total*100):0;
+    return[p.fname+' '+p.lname,...cells,pr,lt,ab,pct+'%'];
+  });
+  downloadCSV('كشف_الحضور_'+MONTHS_AR[month]+'_'+year,headers,rows);
+}
+
+function exportSubscriptions(){
+  const today=new Date();
+  const headers=['اللاعب','نوع الاشتراك','تاريخ البداية','تاريخ الانتهاء','المبلغ','طريقة الدفع','الحالة'];
+  const rows=subscriptions.map(s=>{
+    const p=players.find(x=>x.id===s.playerId);
+    const exp=new Date(s.end)<today;
+    return[p?p.fname+' '+p.lname:'محذوف',s.type,fmtDate(s.start),fmtDate(s.end),s.amount,s.payment,exp?'منتهي':s.status];
+  });
+  downloadCSV('الاشتراكات',headers,rows);
+}
+
+function downloadCSV(filename,headers,rows){
+  const BOM='﻿';
+  const csv=BOM+[headers,...rows].map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('
+');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename+'.csv';a.click();
+  URL.revokeObjectURL(url);
+  showNotif('تم تصدير الملف ✓','green');
+}
+
+// ── IMPORT FUNCTIONS ──
+function toggleImport(){
+  const s=$('import-section');
+  s.style.display=s.style.display==='none'?'block':'none';
+}
+
+function handleImport(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    const lines=text.split('
+').filter(l=>l.trim());
+    if(lines.length<2){showNotif('الملف فارغ أو غير صحيح','red');return;}
+    // Parse CSV
+    const imported=[];
+    for(let i=1;i<lines.length;i++){
+      const cols=lines[i].split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+      if(!cols[0]&&!cols[1])continue;
+      imported.push({
+        id:Date.now()+i,
+        fname:cols[0]||'',
+        lname:cols[1]||'',
+        age:parseInt(cols[2])||null,
+        phone:cols[3]||'',
+        phone2:cols[4]||'',
+        position:cols[5]||'لا يوجد',
+        status:'نشط',
+        joinDate:todayStr(),
+        docs:{id:false,iqama:false,family:false,terms:false,health:false}
+      });
+    }
+    if(!imported.length){showNotif('لم يتم العثور على بيانات','red');return;}
+    $('import-preview').innerHTML=`<div style="color:var(--green);margin-bottom:8px">تم قراءة ${imported.length} لاعب</div>
+      ${imported.slice(0,3).map(p=>`<div style="color:var(--muted)">${p.fname} ${p.lname} | ${p.phone}</div>`).join('')}
+      ${imported.length>3?`<div style="color:var(--muted)">... و ${imported.length-3} آخرين</div>`:''}
+      <button class="btn btn-fire btn-sm" style="margin-top:10px;width:100%" onclick="confirmImport(${JSON.stringify(imported).replace(/"/g,'&quot;')})">✓ تأكيد الاستيراد</button>`;
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function confirmImport(imported){
+  if(typeof imported==='string')imported=JSON.parse(imported);
+  players.push(...imported);
+  save('players',players);
+  renderPlayers();renderDashboard();
+  $('import-section').style.display='none';
+  showNotif(`تم استيراد ${imported.length} لاعب ✓`,'green');
+  imported.forEach(p=>logActivity('استيراد لاعب: '+p.fname+' '+p.lname,'var(--blue)'));
+}
+
 function copyCheckinLink(){
   const link='https://ivveiiii.github.io/one-fire/checkin.html';
   if(navigator.clipboard){
