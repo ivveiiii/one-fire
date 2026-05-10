@@ -222,7 +222,7 @@ select{cursor:pointer;background-image:none}
     <div class="login-card">
       <div class="form-group">
         <div class="form-label" style="color:rgba(255,255,255,.6);text-align:center;margin-bottom:10px;font-size:13px">أدخل رمز الدخول</div>
-        <input type="tel" id="login-pass" placeholder="305" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif">
+        <input type="password" id="login-pass" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif">
         <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
       </div>
       <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:4px">
@@ -937,7 +937,7 @@ async function doLogin(){
   document.getElementById('app').style.display='flex';
   document.getElementById('app').style.flexDirection='column';
   document.getElementById('app').style.height='100%';
-  document.getElementById('header-user-role').textContent=u.name;
+  document.getElementById('header-user-role').textContent='المدير';
   initDateSelects();
   renderDashboard();
   applyRolePermissions();
@@ -2460,8 +2460,7 @@ function exportSubscriptions(){
 
 function downloadCSV(filename,headers,rows){
   const BOM='﻿';
-  const csv=BOM+[headers,...rows].map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('
-');
+  const csv=BOM+[headers,...rows].map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -2481,8 +2480,7 @@ function handleImport(input){
   const reader=new FileReader();
   reader.onload=function(e){
     const text=e.target.result;
-    const lines=text.split('
-').filter(l=>l.trim());
+    const lines=text.split('\n').filter(l=>l.trim());
     if(lines.length<2){showNotif('الملف فارغ أو غير صحيح','red');return;}
     // Parse CSV
     const imported=[];
