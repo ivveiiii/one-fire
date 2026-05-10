@@ -541,6 +541,12 @@ select{cursor:pointer;background-image:none}
       </div>
     </div>
     <div class="page" id="page-settings">
+      <!-- زر إعادة تعيين اللاعبين -->
+      <div class="card" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.05)">
+        <div class="card-title" style="margin-bottom:10px;color:var(--red)"><i class="ti ti-refresh"></i> إعادة تعيين بيانات اللاعبين</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">إذا ظهرت أسماء اللاعبين بشكل غريب أو خاطئ، اضغط هنا لاستعادة البيانات الصحيحة</div>
+        <button class="btn btn-red btn-full" onclick="resetPlayersToDefault()"><i class="ti ti-refresh"></i> استعادة بيانات اللاعبين الصحيحة</button>
+      </div>
       <div class="card" id="settings-card-users">
         <div class="card-title" style="margin-bottom:14px"><i class="ti ti-shield-lock" style="color:var(--fire)"></i> إدارة المستخدمين والرموز</div>
         <div id="users-settings-list"></div>
@@ -890,7 +896,12 @@ async function loadAllData(){
     notifTexts=nt||{add:'انضم لاعب جديد: {اسم}',del:'تم حذف اللاعب: {اسم}',edit:'تعديل بيانات: {اسم}',sub:'تسجيل اشتراك: {اسم}',match:'دعوة مباراة ضد {اسم}'};
     statsMatches=toArr(sm);matchStats=mst||{};
     // إذا ما في لاعبين محفوظين، استخدم البيانات الافتراضية من الإكسل
-    if(!players.length) players=[...DEFAULT_PLAYERS];
+    // إذا البيانات تالفة أو فارغة، استخدم اللاعبين الافتراضيين
+    const hasValidPlayers = players.length > 0 && players[0].fname && players[0].fname.length < 50 && /[\u0600-\u06FF]/.test(players[0].fname);
+    if(!hasValidPlayers) {
+      players=[...DEFAULT_PLAYERS];
+      save('players', players);
+    }
   }catch(e){console.error('Firebase load error:',e);}
   ca.innerHTML=saved;
 }
@@ -2172,6 +2183,17 @@ function renderReports(){
 // ============================================================
 //  SETTINGS
 // ============================================================
+function resetPlayersToDefault(){
+  if(!confirm('سيتم مسح بيانات اللاعبين الحالية واستبدالها بالبيانات الصحيحة. هل أنت متأكد؟'))return;
+  players=[...DEFAULT_PLAYERS];
+  save('players',players);
+  // مسح من Firebase أيضاً
+  if(db){try{db.ref('academy/players').set(players).catch(e=>console.log(e));}catch(e){}}
+  renderPlayers();
+  renderDashboard();
+  showNotif('تم استعادة بيانات اللاعبين ✓','green');
+}
+
 function renderSettingsPage(){
   $('set-name').value=settings.name||'أكاديمية ون فاير';
   $('set-manager').value=settings.manager||'';$('set-phone').value=settings.phone||'';$('set-location').value=settings.location||'';
