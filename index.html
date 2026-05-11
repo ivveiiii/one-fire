@@ -207,6 +207,7 @@ select{cursor:pointer;background-image:none}
 /* ── WA SENT ── */
 .wa-sent{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--wa)}
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -245,11 +246,27 @@ select{cursor:pointer;background-image:none}
         <select id="sm-year"><option value="">السنة</option></select>
       </div>
     </div>
+    <div class="form-group"><div class="form-label">الفئة *</div>
+      <select id="sm-category">
+        <option value="براعم">🟠 براعم</option>
+        <option value="شباب">🔵 شباب</option>
+      </select>
+    </div>
     <div class="form-group"><div class="form-label">الملعب (اختياري)</div><input id="sm-location" placeholder="اسم الملعب"></div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-fire" style="flex:1" onclick="saveStatsMatch()"><i class="ti ti-check"></i> إضافة</button>
       <button class="btn btn-outline" onclick="closeModal('stats-match')">إلغاء</button>
     </div>
+  </div>
+</div>
+
+<!-- Player Stats Modal -->
+<div class="modal-overlay" id="modal-player-stats">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="pstats-title">📊 إحصائيات اللاعب</div>
+    <div id="pstats-body"></div>
+    <button class="btn btn-outline btn-full" onclick="closeModal('player-stats')" style="margin-top:12px">إغلاق</button>
   </div>
 </div>
 
@@ -335,7 +352,12 @@ select{cursor:pointer;background-image:none}
         <input type="text" id="player-search" placeholder="🔍  بحث..." oninput="renderPlayers()" style="flex:1">
         <button class="btn btn-sm btn-blue" onclick="exportPlayers()"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
       </div>
-      <div class="form-grid" style="margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <select id="player-cat-filter" onchange="renderPlayers()">
+          <option value="">كل الفئات</option>
+          <option value="براعم">🟠 براعم</option>
+          <option value="شباب">🔵 شباب</option>
+        </select>
         <select id="player-group-filter" onchange="renderPlayers()"><option value="">كل المجموعات</option></select>
         <select id="player-status-filter" onchange="renderPlayers()">
           <option value="">كل الحالات</option><option value="نشط">نشط</option><option value="منتهي">منتهي</option><option value="موقوف">موقوف</option>
@@ -627,6 +649,13 @@ select{cursor:pointer;background-image:none}
           <option value="مدافع">مدافع</option><option value="حارس مرمى">حارس مرمى</option><option value="جناح">جناح</option>
         </select>
       </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">الفئة *</div>
+      <select id="pl-category">
+        <option value="براعم">🟠 براعم</option>
+        <option value="شباب">🔵 شباب</option>
+      </select>
     </div>
     <div class="form-group" id="pl-status-group" style="display:none">
       <div class="form-label">الحالة</div>
@@ -1179,7 +1208,7 @@ function populateSubPlayer(){
 // ============================================================
 //  PLAYERS
 // ============================================================
-function openAddPlayer(){$('pl-modal-title').textContent='🔥 إضافة لاعب جديد';openModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';$('pl-group').value='';$('pl-pos').value='لا يوجد';}
+function openAddPlayer(){$('pl-modal-title').textContent='🔥 إضافة لاعب جديد';openModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';$('pl-group').value='';$('pl-pos').value='لا يوجد';$('pl-category').value='براعم';}
 function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
@@ -1188,6 +1217,7 @@ function openEditPlayer(id){
   $('pl-notes').value=p.notes||'';
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
+  $('pl-category').value=p.category||'براعم';
   $('pl-status-group').style.display='block';$('pl-status').value=p.status||'نشط';
   // Load docs
   const d=p.docs||{};
@@ -1239,12 +1269,12 @@ function savePlayer(){
     const p=players.find(x=>x.id==pid);if(!p)return;
     p.fname=fn;p.lname=ln;p.age=parseInt($('pl-age').value)||null;
     p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.checkinCode=$('pl-code').value.trim()||null;p.groupId=$('pl-group').value||null;
-    p.position=$('pl-pos').value||'لا يوجد';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
+    p.position=$('pl-pos').value||'لا يوجد';p.category=$('pl-category').value||'براعم';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
     save('players',players);logActivity(buildNotif('edit',fn+' '+ln),'var(--amber)');
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',category:$('pl-category').value||'براعم',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
@@ -1288,6 +1318,7 @@ function renderPlayers(){
         <div class="player-row-name">${p.fname} ${p.lname}</div>
         <div class="player-row-sub" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">
           ${p.age?`<span>${p.age} سنة</span>`:''}
+          ${p.category?`<span style="background:${p.category==='شباب'?'rgba(59,130,246,.15)':'rgba(251,146,60,.15)'};color:${p.category==='شباب'?'var(--blue)':'var(--amber)'};padding:1px 7px;border-radius:20px;font-size:9px;font-weight:700">${p.category}</span>`:''}
           ${g?`<span class="badge badge-blue" style="font-size:9px">${g.name}</span>`:''}
           ${p.position&&p.position!=='لا يوجد'?`<span style="color:var(--muted)">${p.position}</span>`:''}
           ${p.phone2?`<span style="color:var(--muted);direction:ltr">${p.phone2} 🆘</span>`:''}
@@ -1304,7 +1335,8 @@ function renderPlayers(){
         ${attT?`<div style="margin-top:5px;display:flex;align-items:center;gap:6px"><div class="prog" style="flex:1"><div class="prog-fill" style="width:${pct}%;${pct<60?'background:var(--red)':pct<80?'background:var(--amber)':''}"></div></div><span style="font-size:10px;color:var(--muted)">${pct}%</span></div>`:''}
       </div>
       <div class="player-row-actions">
-        <button class="btn btn-xs btn-blue" onclick="openEditPlayer(${p.id})"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-xs btn-blue" onclick="openEditPlayer(${p.id})" title="تعديل"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-xs" style="background:rgba(251,146,60,.15);color:#FB923C;border:1px solid rgba(251,146,60,.3)" onclick="openPlayerStats(${p.id})" title="إحصائيات اللاعب"><i class="ti ti-chart-bar"></i></button>
         ${p.phone&&sub&&new Date(sub.end)<new Date()?`<button class="btn btn-xs btn-wa" onclick="sendSubExpiredWA(${p.id})" title="إشعار انتهاء الاشتراك"><svg width="12" height="12" viewBox="0 0 24 24" fill="var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button>`:''}
         ${currentUser&&currentUser.role==='admin'?`<button class="btn btn-xs btn-red" onclick="deletePlayer(${p.id})"><i class="ti ti-trash"></i></button>`:''}
       </div>
@@ -2203,6 +2235,82 @@ function renderSettingsPage(){
   applyRolePermissions();
 }
 // ============================================================
+//  PLAYER STATS MODAL
+// ============================================================
+function openPlayerStats(pid){
+  const p=players.find(x=>x.id===pid);
+  if(!p)return;
+  $('pstats-title').innerHTML=`📊 ${p.fname} ${p.lname} <span style="font-size:11px;color:var(--muted);font-weight:400">${p.category||''}</span>`;
+  // جمع إحصائيات اللاعب من كل المباريات
+  let totals={goals:0,assists:0,saves:0,yellow:0,red:0,matches:0};
+  const matchRows=[];
+  statsMatches.forEach(m=>{
+    const ps=(matchStats[m.id]||{})[pid];
+    if(!ps)return;
+    const hasData=ps.goals||ps.assists||ps.saves||ps.yellow||ps.red||ps.minutes;
+    if(!hasData)return;
+    totals.goals+=ps.goals||0;
+    totals.assists+=ps.assists||0;
+    totals.saves+=ps.saves||0;
+    totals.yellow+=ps.yellow||0;
+    totals.red+=ps.red||0;
+    totals.matches++;
+    matchRows.push({match:m,ps});
+  });
+  const catColor=p.category==='شباب'?'var(--blue)':'var(--amber)';
+  $('pstats-body').innerHTML=`
+    <!-- إجماليات -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:var(--amber)">${totals.goals}</div>
+        <div style="font-size:10px;color:var(--muted)">أهداف ⚽</div>
+      </div>
+      <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:var(--blue)">${totals.assists}</div>
+        <div style="font-size:10px;color:var(--muted)">صناعة 🅰️</div>
+      </div>
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:var(--green)">${totals.saves}</div>
+        <div style="font-size:10px;color:var(--muted)">تصديات 🧤</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:var(--fire)">${totals.matches}</div>
+        <div style="font-size:10px;color:var(--muted)">مباريات</div>
+      </div>
+      <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:#F59E0B">${totals.yellow}</div>
+        <div style="font-size:10px;color:var(--muted)">أصفر 🟨</div>
+      </div>
+      <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:26px;font-weight:700;color:var(--red)">${totals.red}</div>
+        <div style="font-size:10px;color:var(--muted)">أحمر 🟥</div>
+      </div>
+    </div>
+    <!-- تفاصيل كل مباراة -->
+    ${matchRows.length?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">تفاصيل المباريات</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${matchRows.map(({match:m,ps})=>`
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-weight:600;font-size:13px">ضد ${m.opponent}</div>
+            <span style="background:${m.category==='شباب'?'rgba(59,130,246,.2)':'rgba(251,146,60,.2)'};color:${m.category==='شباب'?'var(--blue)':'var(--amber)'};padding:1px 8px;border-radius:20px;font-size:10px">${m.category||''}</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${m.date?fmtDate(m.date):''} ${m.scoreUs!==undefined?'• '+m.scoreUs+' - '+m.scoreThem:''}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${ps.goals?`<span style="background:rgba(251,191,36,.15);color:var(--amber);padding:2px 8px;border-radius:8px;font-size:11px">⚽ ${ps.goals} أهداف</span>`:''}
+            ${ps.assists?`<span style="background:rgba(59,130,246,.15);color:var(--blue);padding:2px 8px;border-radius:8px;font-size:11px">🅰️ ${ps.assists} صناعة</span>`:''}
+            ${ps.saves?`<span style="background:rgba(34,197,94,.15);color:var(--green);padding:2px 8px;border-radius:8px;font-size:11px">🧤 ${ps.saves} تصديات</span>`:''}
+            ${ps.yellow?`<span style="background:rgba(245,158,11,.15);color:#F59E0B;padding:2px 8px;border-radius:8px;font-size:11px">🟨 ${ps.yellow}</span>`:''}
+            ${ps.red?`<span style="background:rgba(239,68,68,.15);color:var(--red);padding:2px 8px;border-radius:8px;font-size:11px">🟥 ${ps.red}</span>`:''}
+            ${ps.minutes?`<span style="background:var(--card);color:var(--muted);padding:2px 8px;border-radius:8px;font-size:11px">⏱️ ${ps.minutes} دقيقة</span>`:''}
+          </div>
+        </div>`).join('')}
+    </div>`:'<div class="empty" style="padding:20px"><i class="ti ti-chart-bar"></i><p>لا توجد إحصائيات مسجلة لهذا اللاعب</p></div>'}
+  `;
+  openModal('player-stats');
+}
+
+// ============================================================
 //  STATS (إحصائيات المباريات)
 // ============================================================
 let currentStatsMatchId = null;
@@ -2234,7 +2342,7 @@ function saveStatsMatch(){
   const opp=$('sm-opponent').value.trim();
   if(!opp){showNotif('أدخل اسم الخصم','red');return;}
   const dateStr=buildDateStr($('sm-day').value,$('sm-month').value,$('sm-year').value);
-  const m={id:Date.now(),opponent:opp,date:dateStr||todayStr(),location:$('sm-location').value.trim()||'',scoreUs:0,scoreThem:0};
+  const m={id:Date.now(),opponent:opp,date:dateStr||todayStr(),category:$('sm-category').value||'براعم',location:$('sm-location').value.trim()||'',scoreUs:0,scoreThem:0};
   statsMatches.unshift(m);
   save('stats_matches',statsMatches);
   closeModal('stats-match');
@@ -2259,7 +2367,8 @@ function loadMatchStats(){
   if(!match)return;
   $('stats-match-info').style.display='block';
   $('stats-players-section').style.display='block';
-  $('stats-match-header').innerHTML=`<div style="font-weight:700;font-size:15px">⚽ ضد ${match.opponent}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${match.date?fmtDate(match.date):''}${match.location?' • '+match.location:''}</div>`;
+  const catColor=match.category==='شباب'?'var(--blue)':'var(--amber)';
+  $('stats-match-header').innerHTML=`<div style="display:flex;align-items:center;gap:8px"><div style="font-weight:700;font-size:15px">⚽ ضد ${match.opponent}</div><span style="background:${catColor};color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">${match.category||'براعم'}</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">${match.date?fmtDate(match.date):''}${match.location?' • '+match.location:''}</div>`;
   $('stats-opp-label').textContent=match.opponent;
   $('stats-score-us').value=match.scoreUs||0;
   $('stats-score-them').value=match.scoreThem||0;
@@ -2279,7 +2388,9 @@ function renderStatsTable(matchId){
   const tbody=$('stats-table-body');
   if(!players.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">لا يوجد لاعبون</td></tr>';return;}
   const mStats=matchStats[matchId]||{};
-  tbody.innerHTML=[...players].sort((a,b)=>(a.fname+a.lname).localeCompare(b.fname+b.lname,'ar')).map(p=>{
+  const matchCat=(statsMatches.find(x=>x.id===matchId)||{}).category||'';
+  const filteredP=matchCat?players.filter(p=>p.category===matchCat):players;
+  tbody.innerHTML=[...filteredP].sort((a,b)=>(a.fname+a.lname).localeCompare(b.fname+b.lname,'ar')).map(p=>{
     const ps=mStats[p.id]||{goals:0,assists:0,saves:0,yellow:0,red:0,minutes:0};
     return`<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
       <td style="padding:6px 6px;white-space:nowrap;font-size:12px">
