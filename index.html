@@ -1384,6 +1384,9 @@ function buildAttDayButtons(){
     const dt=new Date(start);dt.setDate(start.getDate()+d);
     return `${dayNames[d]}<br><span style="font-size:10px;opacity:.7">${dt.getDate()} ${months[dt.getMonth()]}</span>`;
   }
+  function localDate(d){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
   el.innerHTML=`
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">📅 هذا الأسبوع</div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -1413,7 +1416,9 @@ function selectTrainingDay(dayNum, weekOffset){
   // أضف dayNum للحصول على اليوم المطلوب
   const target=new Date(startOfWeek);
   target.setDate(startOfWeek.getDate()+dayNum);
-  currentAttDate=target.toISOString().split('T')[0];
+  // نحفظ التاريخ كـ YYYY-MM-DD بتوقيت محلي
+  const yy=target.getFullYear(),mm=String(target.getMonth()+1).padStart(2,'0'),dd=String(target.getDate()).padStart(2,'0');
+  currentAttDate=`${yy}-${mm}-${dd}`;
   // Reset all buttons
   [0,2,3].forEach(d=>{
     const b0=$('day-btn-'+d);
@@ -1430,7 +1435,8 @@ function selectTrainingDay(dayNum, weekOffset){
 
 function renderAttForSelectedDate(){
   const dayNames={0:'الأحد',1:'الاثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت'};
-  const d=new Date(currentAttDate);
+  // إضافة T12:00 لتفادي مشكلة الـ timezone
+  const d=new Date(currentAttDate+'T12:00:00');
   const dayName=dayNames[d.getDay()]||'';
   const lbl=$('att-day-label');
   const dlbl=$('att-date-label');
@@ -1641,7 +1647,10 @@ function markAllForDateStatus(status){
   updateDashAtt();
 }
 function updateAttBadge(){
-  const today=todayStr();const p=players.filter(x=>attendance[today+'_'+x.id]).length;
+  const p=players.filter(x=>{
+    const v=attendance[currentAttDate+'_'+x.id];
+    return v&&v!==false;
+  }).length;
   $('att-count-badge').textContent=`${p} / ${players.length}`;
 }
 function updateDashAtt(){
