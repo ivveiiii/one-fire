@@ -381,10 +381,19 @@ select{cursor:pointer;background-image:none}
     <!-- ATTENDANCE -->
     <div class="page" id="page-attendance">
       <!-- Day selector -->
+      <!-- أسبوع هذا الأسبوع -->
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">📅 هذا الأسبوع</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn btn-fire" style="flex:1;justify-content:center;font-size:13px" id="day-btn-0" onclick="selectTrainingDay(0,0)">الأحد</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px" id="day-btn-2" onclick="selectTrainingDay(2,0)">الثلاثاء</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px" id="day-btn-3" onclick="selectTrainingDay(3,0)">الأربعاء</button>
+      </div>
+      <!-- الأسبوع الماضي -->
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">⬅️ الأسبوع الماضي</div>
       <div style="display:flex;gap:8px;margin-bottom:14px">
-        <button class="btn btn-fire" style="flex:1;justify-content:center" id="day-btn-0" onclick="selectTrainingDay(0)">الأحد</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center" id="day-btn-2" onclick="selectTrainingDay(2)">الثلاثاء</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center" id="day-btn-3" onclick="selectTrainingDay(3)">الأربعاء</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-0-1" onclick="selectTrainingDay(0,1)">الأحد</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-2-1" onclick="selectTrainingDay(2,1)">الثلاثاء</button>
+        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-3-1" onclick="selectTrainingDay(3,1)">الأربعاء</button>
       </div>
       <!-- Selected date info -->
       <div class="card" style="padding:12px 16px;margin-bottom:12px">
@@ -1351,20 +1360,25 @@ function switchAttTab(tab,el){} // removed - new UI
 
 let currentAttDate = todayStr();
 
-function selectTrainingDay(dayNum){
-  // Find closest date with this day (current or past week)
+function selectTrainingDay(dayNum, weekOffset){
+  weekOffset=weekOffset||0;
   const today=new Date();
   const todayDay=today.getDay();
   let diff=(todayDay-dayNum+7)%7;
-  if(diff===0) diff=0; // today
   const target=new Date(today);
-  target.setDate(today.getDate()-diff);
+  target.setDate(today.getDate()-diff-(weekOffset*7));
   currentAttDate=target.toISOString().split('T')[0];
-  // Update buttons
+  // Reset all buttons
   [0,2,3].forEach(d=>{
-    const btn=$('day-btn-'+d);
-    if(btn)btn.className='btn '+(d===dayNum?'btn-fire':'btn-outline')+' btn-sm';
+    const b0=$('day-btn-'+d);
+    const b1=$('day-btn-'+d+'-1');
+    if(b0)b0.className='btn btn-outline btn-sm';
+    if(b1){b1.className='btn btn-outline btn-sm';b1.style.opacity='0.8';}
   });
+  // Highlight selected
+  const selId='day-btn-'+dayNum+(weekOffset?'-1':'');
+  const selBtn=$(selId);
+  if(selBtn){selBtn.className='btn btn-fire btn-sm';selBtn.style.opacity='1';}
   renderAttForSelectedDate();
 }
 
@@ -2402,13 +2416,29 @@ function renderStatsTable(matchId){
       ${['goals','assists','saves','yellow','red','minutes'].map((field,i)=>{
         const colors={goals:'var(--amber)',assists:'var(--blue)',saves:'var(--green)',yellow:'#F59E0B',red:'var(--red)',minutes:'var(--muted)'};
         return`<td style="text-align:center;padding:4px 2px">
-          <input type="number" min="0" value="${ps[field]||0}" 
-            onchange="updatePlayerStat(${p.id},'${field}',this.value)"
-            style="width:40px;text-align:center;padding:4px 2px;font-size:13px;font-weight:600;color:${colors[field]};background:var(--card2);border:1px solid var(--border);border-radius:6px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <button onclick="stepStat(${p.id},'${field}',1)" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">+</button>
+            <div id="stat-${p.id}-${field}" style="font-size:15px;font-weight:700;color:${colors[field]};min-width:24px;text-align:center">${ps[field]||0}</div>
+            <button onclick="stepStat(${p.id},'${field}',-1)" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">−</button>
+          </div>
         </td>`;
       }).join('')}
     </tr>`;
   }).join('');
+}
+
+function stepStat(pid,field,delta){
+  if(!currentStatsMatchId)return;
+  if(!matchStats[currentStatsMatchId])matchStats[currentStatsMatchId]={};
+  if(!matchStats[currentStatsMatchId][pid])matchStats[currentStatsMatchId][pid]={goals:0,assists:0,saves:0,yellow:0,red:0,minutes:0};
+  const cur=matchStats[currentStatsMatchId][pid][field]||0;
+  const newVal=Math.max(0,cur+delta);
+  matchStats[currentStatsMatchId][pid][field]=newVal;
+  // تحديث الرقم مباشرة بدون إعادة رسم الجدول
+  const el=$('stat-'+pid+'-'+field);
+  if(el)el.textContent=newVal;
+  save('match_stats',matchStats);
+  renderOverallStats();
 }
 
 function updatePlayerStat(pid,field,val){
