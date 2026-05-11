@@ -206,6 +206,7 @@ select{cursor:pointer;background-image:none}
 
 /* ── WA SENT ── */
 .wa-sent{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--wa)}
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -304,6 +305,9 @@ select{cursor:pointer;background-image:none}
     <div class="header-actions">
       <div class="icon-btn fire-btn" id="topbar-add-btn" style="display:none" onclick="topbarAction()">
         <i class="ti ti-plus"></i>
+      </div>
+      <div class="icon-btn" onclick="refreshCurrentPage()" title="تحديث" id="refresh-btn" style="position:relative">
+        <i class="ti ti-refresh" id="refresh-icon"></i>
       </div>
       <div class="icon-btn" onclick="doLogout()" title="خروج"><i class="ti ti-logout"></i></div>
     </div>
@@ -966,6 +970,39 @@ async function doLogin(){
   applyRolePermissions();
   loadAllData().then(()=>{renderDashboard();initDateSelects();}).catch(e=>console.log('err',e));
 }
+function refreshCurrentPage(){
+  const icon=$('refresh-icon');
+  const btn=$('refresh-btn');
+  if(icon)icon.style.animation='spin .6s linear infinite';
+  if(btn)btn.style.pointerEvents='none';
+  loadAllData().then(()=>{
+    // أعد رسم الصفحة الحالية
+    const pages=['dashboard','players','attendance','subscriptions','matches','coaches','groups','reports','stats','settings'];
+    const current=pages.find(p=>{ const el=document.getElementById('page-'+p); return el&&el.style.display!=='none'; });
+    if(current){
+      const fn={
+        players:renderPlayers,
+        attendance:()=>{buildAttDayButtons();renderAttForSelectedDate();},
+        subscriptions:()=>{renderSubs();populateSubPlayer();},
+        matches:renderMatchesPage,
+        coaches:renderCoaches,
+        groups:renderGroups,
+        reports:renderReports,
+        dashboard:renderDashboard,
+        stats:renderStatsPage,
+        settings:()=>{renderSettingsPage();renderUsersSettings();}
+      };
+      if(fn[current])fn[current]();
+    }
+    showNotif('تم التحديث ✓','green');
+  }).catch(()=>{
+    showNotif('تعذر التحديث','red');
+  }).finally(()=>{
+    if(icon)icon.style.animation='';
+    if(btn)btn.style.pointerEvents='';
+  });
+}
+
 function doLogout(){
   currentUser=null;
   document.getElementById('login-screen').style.display='flex';
