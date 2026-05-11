@@ -1670,21 +1670,23 @@ function markAllForDate(val){
 function renderFullReport(){
   const el=$('att-full-report');
   if(!el)return;
-  if(!players.length){el.innerHTML='<div class="empty" style="padding:16px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';return;}
+  // فلترة اللاعبين للمدرب
+  const reportPlayers=getCoachPlayers();
+  if(!reportPlayers.length){el.innerHTML='<div class="empty" style="padding:16px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';return;}
   const year=histYear,month=histMonth;
   const daysInMonth=new Date(year,month+1,0).getDate();
   const monthStr=`${year}-${String(month+1).padStart(2,'0')}`;
   const trainingDates=[];
   for(let d=1;d<=daysInMonth;d++){
     const dateStr=`${monthStr}-${String(d).padStart(2,'0')}`;
-    const day=new Date(dateStr).getDay();
+    const day=new Date(dateStr+'T12:00:00').getDay();
     if([0,2,3].includes(day)) trainingDates.push({dateStr,day,d});
   }
   if(!trainingDates.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px">لا توجد أيام تدريب في هذا الشهر</p>';return;}
   const dayNames={0:'أحد',2:'ثلاثاء',3:'أربعاء'};
 
   // Build player stats
-  const playerStats=players.map(p=>{
+  const playerStats=reportPlayers.map(p=>{
     let pr=0,lt=0,ab=0;
     trainingDates.forEach(t=>{
       const st=getAttStatus(p.id,t.dateStr);
@@ -2637,9 +2639,9 @@ function renderStatsTable(matchId){
         const colors={goals:'var(--amber)',assists:'var(--blue)',saves:'var(--green)',yellow:'#F59E0B',red:'var(--red)',minutes:'var(--muted)'};
         return`<td style="text-align:center;padding:4px 2px">
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-            <button onclick="stepStat(${p.id},'${field}',1)" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">+</button>
+            <button onclick="stepStat(${p.id},'${field}',1,${matchId})" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">+</button>
             <div id="stat-${p.id}-${field}" style="font-size:15px;font-weight:700;color:${colors[field]};min-width:24px;text-align:center">${ps[field]||0}</div>
-            <button onclick="stepStat(${p.id},'${field}',-1)" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">−</button>
+            <button onclick="stepStat(${p.id},'${field}',-1,${matchId})" style="width:28px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center">−</button>
           </div>
         </td>`;
       }).join('')}
@@ -2647,14 +2649,14 @@ function renderStatsTable(matchId){
   }).join('');
 }
 
-function stepStat(pid,field,delta){
-  if(!currentStatsMatchId)return;
-  if(!matchStats[currentStatsMatchId])matchStats[currentStatsMatchId]={};
-  if(!matchStats[currentStatsMatchId][pid])matchStats[currentStatsMatchId][pid]={goals:0,assists:0,saves:0,yellow:0,red:0,minutes:0};
-  const cur=matchStats[currentStatsMatchId][pid][field]||0;
+function stepStat(pid,field,delta,mid){
+  const matchId=mid||currentStatsMatchId;
+  if(!matchId)return;
+  if(!matchStats[matchId])matchStats[matchId]={};
+  if(!matchStats[matchId][pid])matchStats[matchId][pid]={goals:0,assists:0,saves:0,yellow:0,red:0,minutes:0};
+  const cur=matchStats[matchId][pid][field]||0;
   const newVal=Math.max(0,cur+delta);
-  matchStats[currentStatsMatchId][pid][field]=newVal;
-  // تحديث الرقم مباشرة بدون إعادة رسم الجدول
+  matchStats[matchId][pid][field]=newVal;
   const el=$('stat-'+pid+'-'+field);
   if(el)el.textContent=newVal;
   save('match_stats',matchStats);
@@ -2676,11 +2678,19 @@ function renderOverallStats(){
     el.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-chart-bar"></i><p>سجل إحصائيات مباراة أولاً</p></div>';
     return;
   }
+  // فلترة اللاعبين حسب المدرب
+  const overallPlayers=getCoachPlayers();
   // Aggregate stats per player
   const totals={};
-  players.forEach(p=>totals[p.id]={goals:0,assists:0,saves:0,yellow:0,red:0,matches:0});
-  Object.values(matchStats).forEach(mStats=>{
-    Object.entries(mStats).forEach(([pid,ps])=>{
+  overallPlayers.forEach(p=>totals[p.id]={goals:0,assists:0,saves:0,yellow:0,red:0,matches:0});
+  // فلترة المباريات حسب المجموعة للمدرب
+  const visMatchIds=isCoach()?statsMatches.filter(m=>{
+    const cg=groups.find(g=>g.name===coachGroup()||g.name.includes(coachGroup()));
+    return cg&&m.groupId==cg.id;
+  }).map(m=>m.id):null;
+  Object.entries(matchStats).forEach(([mid,mSt])=>{
+    if(visMatchIds&&!visMatchIds.includes(parseInt(mid)))return;
+    Object.entries(mSt).forEach(([pid,ps])=>{
       if(!totals[pid])return;
       totals[pid].goals+=(ps.goals||0);
       totals[pid].assists+=(ps.assists||0);
@@ -2691,7 +2701,7 @@ function renderOverallStats(){
     });
   });
   // Sort by goals
-  const sorted=[...players].map(p=>({...p,...totals[p.id]})).filter(p=>p.goals>0||p.assists>0||p.saves>0).sort((a,b)=>b.goals-a.goals||b.assists-a.assists);
+  const sorted=[...overallPlayers].map(p=>({...p,...totals[p.id]})).filter(p=>p.goals>0||p.assists>0||p.saves>0).sort((a,b)=>b.goals-a.goals||b.assists-a.assists);
   if(!sorted.length){el.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-chart-bar"></i><p>لا توجد إحصائيات مسجلة بعد</p></div>';return;}
   el.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
     <thead><tr style="border-bottom:1px solid var(--border)">
