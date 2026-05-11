@@ -601,6 +601,7 @@ select{cursor:pointer;background-image:none}
         <div class="card-title" style="margin-bottom:10px;color:var(--red)"><i class="ti ti-refresh"></i> إعادة تعيين بيانات اللاعبين</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px">إذا ظهرت أسماء اللاعبين بشكل غريب أو خاطئ، اضغط هنا لاستعادة البيانات الصحيحة</div>
         <button class="btn btn-red btn-full" onclick="resetPlayersToDefault()"><i class="ti ti-refresh"></i> استعادة بيانات اللاعبين الصحيحة</button>
+        <button class="btn btn-blue btn-full" onclick="renumberPlayers()" style="margin-top:8px"><i class="ti ti-hash"></i> ترقيم أرقام الحضور تلقائياً (شباب 100+ ← براعم)</button>
       </div>
       <div class="card" id="settings-card-users">
         <div class="card-title" style="margin-bottom:14px"><i class="ti ti-shield-lock" style="color:var(--fire)"></i> إدارة المستخدمين والرموز</div>
@@ -2454,6 +2455,29 @@ function renderReports(){
 // ============================================================
 //  SETTINGS
 // ============================================================
+function renumberPlayers(){
+  if(!players.length){showNotif('لا يوجد لاعبون','red');return;}
+  if(!confirm('سيتم إعادة ترقيم أرقام الحضور:\n• الشباب: 100، 101، 102...\n• البراعم: تكمل من بعد الشباب\nهل أنت متأكد؟'))return;
+
+  // نرتب: الشباب أولاً ثم البراعم
+  const shGroup=groups.find(g=>g.name.includes('شباب'));
+  const brGroup=groups.find(g=>g.name.includes('براعم'));
+
+  const shabab=players.filter(p=>shGroup&&p.groupId==shGroup.id);
+  const baraem=players.filter(p=>brGroup&&p.groupId==brGroup.id);
+  const others=players.filter(p=>(!shGroup||p.groupId!=shGroup.id)&&(!brGroup||p.groupId!=brGroup.id));
+
+  let counter=100;
+  [...shabab,...baraem,...others].forEach(p=>{
+    const pl=players.find(x=>x.id===p.id);
+    if(pl) pl.checkinCode=String(counter++);
+  });
+
+  save('players',players);
+  if(db){try{db.ref('academy/players').set(players).catch(e=>console.log(e));}catch(e){}}
+  showNotif('تم الترقيم ✓ الشباب من 100 ثم البراعم','green');
+}
+
 function resetPlayersToDefault(){
   if(!confirm('سيتم مسح بيانات اللاعبين الحالية واستبدالها بالبيانات الصحيحة. هل أنت متأكد؟'))return;
   players=[...DEFAULT_PLAYERS];
