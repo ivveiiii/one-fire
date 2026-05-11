@@ -246,10 +246,9 @@ select{cursor:pointer;background-image:none}
         <select id="sm-year"><option value="">السنة</option></select>
       </div>
     </div>
-    <div class="form-group"><div class="form-label">الفئة *</div>
+    <div class="form-group"><div class="form-label">المجموعة</div>
       <select id="sm-category">
-        <option value="براعم">🟠 براعم</option>
-        <option value="شباب">🔵 شباب</option>
+        <option value="">— اختر المجموعة —</option>
       </select>
     </div>
     <div class="form-group"><div class="form-label">الملعب (اختياري)</div><input id="sm-location" placeholder="اسم الملعب"></div>
@@ -352,12 +351,7 @@ select{cursor:pointer;background-image:none}
         <input type="text" id="player-search" placeholder="🔍  بحث..." oninput="renderPlayers()" style="flex:1">
         <button class="btn btn-sm btn-blue" onclick="exportPlayers()"><i class="ti ti-file-spreadsheet"></i> تصدير</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <select id="player-cat-filter" onchange="renderPlayers()">
-          <option value="">كل الفئات</option>
-          <option value="براعم">🟠 براعم</option>
-          <option value="شباب">🔵 شباب</option>
-        </select>
+      <div class="form-grid" style="margin-bottom:12px">
         <select id="player-group-filter" onchange="renderPlayers()"><option value="">كل المجموعات</option></select>
         <select id="player-status-filter" onchange="renderPlayers()">
           <option value="">كل الحالات</option><option value="نشط">نشط</option><option value="منتهي">منتهي</option><option value="موقوف">موقوف</option>
@@ -381,20 +375,7 @@ select{cursor:pointer;background-image:none}
     <!-- ATTENDANCE -->
     <div class="page" id="page-attendance">
       <!-- Day selector -->
-      <!-- أسبوع هذا الأسبوع -->
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">📅 هذا الأسبوع</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button class="btn btn-fire" style="flex:1;justify-content:center;font-size:13px" id="day-btn-0" onclick="selectTrainingDay(0,0)">الأحد</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px" id="day-btn-2" onclick="selectTrainingDay(2,0)">الثلاثاء</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px" id="day-btn-3" onclick="selectTrainingDay(3,0)">الأربعاء</button>
-      </div>
-      <!-- الأسبوع الماضي -->
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">⬅️ الأسبوع الماضي</div>
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-0-1" onclick="selectTrainingDay(0,1)">الأحد</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-2-1" onclick="selectTrainingDay(2,1)">الثلاثاء</button>
-        <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:13px;opacity:.8" id="day-btn-3-1" onclick="selectTrainingDay(3,1)">الأربعاء</button>
-      </div>
+      <div id="att-week-btns"></div>
       <!-- Selected date info -->
       <div class="card" style="padding:12px 16px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -658,13 +639,6 @@ select{cursor:pointer;background-image:none}
           <option value="مدافع">مدافع</option><option value="حارس مرمى">حارس مرمى</option><option value="جناح">جناح</option>
         </select>
       </div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">الفئة *</div>
-      <select id="pl-category">
-        <option value="براعم">🟠 براعم</option>
-        <option value="شباب">🔵 شباب</option>
-      </select>
     </div>
     <div class="form-group" id="pl-status-group" style="display:none">
       <div class="form-label">الحالة</div>
@@ -1121,6 +1095,7 @@ function canEdit(){return currentUser&&(currentUser.role==='admin'||currentUser.
 //  DATE SELECTS INIT
 // ============================================================
 function initDateSelects(){
+  buildAttDayButtons();
   // Days
   ['m-day','sub-day','sub-end-day'].forEach(id=>{
     const el=$(id);if(!el)return;el.innerHTML='<option value="">يوم</option>';
@@ -1185,7 +1160,7 @@ function showPage(name,tabEl){
   $('topbar-add-btn').style.display=addModal?'flex':'none';
   $('topbar-add-btn').dataset.modal=addModal||'';
   // render
-  const fn={players:renderPlayers,attendance:renderAttToday,subscriptions:()=>{renderSubs();populateSubPlayer();},matches:renderMatchesPage,coaches:renderCoaches,groups:renderGroups,reports:renderReports,dashboard:renderDashboard,settings:()=>{renderSettingsPage();renderUsersSettings();},stats:renderStatsPage};
+  const fn={players:renderPlayers,attendance:()=>{buildAttDayButtons();renderAttToday();},subscriptions:()=>{renderSubs();populateSubPlayer();},matches:renderMatchesPage,coaches:renderCoaches,groups:renderGroups,reports:renderReports,dashboard:renderDashboard,settings:()=>{renderSettingsPage();renderUsersSettings();},stats:renderStatsPage};
   if(fn[name])fn[name]();
   $('content-area').scrollTo(0,0);
 }
@@ -1217,7 +1192,7 @@ function populateSubPlayer(){
 // ============================================================
 //  PLAYERS
 // ============================================================
-function openAddPlayer(){$('pl-modal-title').textContent='🔥 إضافة لاعب جديد';openModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';$('pl-group').value='';$('pl-pos').value='لا يوجد';$('pl-category').value='براعم';}
+function openAddPlayer(){$('pl-modal-title').textContent='🔥 إضافة لاعب جديد';openModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';$('pl-group').value='';$('pl-pos').value='لا يوجد';}
 function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
@@ -1226,7 +1201,7 @@ function openEditPlayer(id){
   $('pl-notes').value=p.notes||'';
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
-  $('pl-category').value=p.category||'براعم';
+
   $('pl-status-group').style.display='block';$('pl-status').value=p.status||'نشط';
   // Load docs
   const d=p.docs||{};
@@ -1278,12 +1253,12 @@ function savePlayer(){
     const p=players.find(x=>x.id==pid);if(!p)return;
     p.fname=fn;p.lname=ln;p.age=parseInt($('pl-age').value)||null;
     p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.checkinCode=$('pl-code').value.trim()||null;p.groupId=$('pl-group').value||null;
-    p.position=$('pl-pos').value||'لا يوجد';p.category=$('pl-category').value||'براعم';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
+    p.position=$('pl-pos').value||'لا يوجد';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
     save('players',players);logActivity(buildNotif('edit',fn+' '+ln),'var(--amber)');
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',category:$('pl-category').value||'براعم',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
@@ -1327,7 +1302,6 @@ function renderPlayers(){
         <div class="player-row-name">${p.fname} ${p.lname}</div>
         <div class="player-row-sub" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">
           ${p.age?`<span>${p.age} سنة</span>`:''}
-          ${p.category?`<span style="background:${p.category==='شباب'?'rgba(59,130,246,.15)':'rgba(251,146,60,.15)'};color:${p.category==='شباب'?'var(--blue)':'var(--amber)'};padding:1px 7px;border-radius:20px;font-size:9px;font-weight:700">${p.category}</span>`:''}
           ${g?`<span class="badge badge-blue" style="font-size:9px">${g.name}</span>`:''}
           ${p.position&&p.position!=='لا يوجد'?`<span style="color:var(--muted)">${p.position}</span>`:''}
           ${p.phone2?`<span style="color:var(--muted);direction:ltr">${p.phone2} 🆘</span>`:''}
@@ -1360,19 +1334,54 @@ function switchAttTab(tab,el){} // removed - new UI
 
 let currentAttDate = todayStr();
 
+function buildAttDayButtons(){
+  const el=$('att-week-btns');
+  if(!el)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayDay=today.getDay();
+  const startThisWeek=new Date(today);startThisWeek.setDate(today.getDate()-todayDay);
+  const startLastWeek=new Date(startThisWeek);startLastWeek.setDate(startThisWeek.getDate()-7);
+  const dayNames={0:'الأحد',2:'الثلاثاء',3:'الأربعاء'};
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  function dayLabel(start,d){
+    const dt=new Date(start);dt.setDate(start.getDate()+d);
+    return `${dayNames[d]}<br><span style="font-size:10px;opacity:.7">${dt.getDate()} ${months[dt.getMonth()]}</span>`;
+  }
+  el.innerHTML=`
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">📅 هذا الأسبوع</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn btn-fire" style="flex:1;justify-content:center;font-size:12px;line-height:1.4" id="day-btn-0" onclick="selectTrainingDay(0,0)">${dayLabel(startThisWeek,0)}</button>
+      <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12px;line-height:1.4" id="day-btn-2" onclick="selectTrainingDay(2,0)">${dayLabel(startThisWeek,2)}</button>
+      <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12px;line-height:1.4" id="day-btn-3" onclick="selectTrainingDay(3,0)">${dayLabel(startThisWeek,3)}</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600">⬅️ الأسبوع الماضي</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12px;line-height:1.4;opacity:.8" id="day-btn-0-1" onclick="selectTrainingDay(0,1)">${dayLabel(startLastWeek,0)}</button>
+      <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12px;line-height:1.4;opacity:.8" id="day-btn-2-1" onclick="selectTrainingDay(2,1)">${dayLabel(startLastWeek,2)}</button>
+      <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:12px;line-height:1.4;opacity:.8" id="day-btn-3-1" onclick="selectTrainingDay(3,1)">${dayLabel(startLastWeek,3)}</button>
+    </div>`;
+}
+
 function selectTrainingDay(dayNum, weekOffset){
   weekOffset=weekOffset||0;
+  // نحسب بداية الأسبوع الحالي (الأحد)
   const today=new Date();
+  today.setHours(0,0,0,0);
   const todayDay=today.getDay();
-  let diff=(todayDay-dayNum+7)%7;
-  const target=new Date(today);
-  target.setDate(today.getDate()-diff-(weekOffset*7));
+  // أرجع لبداية الأسبوع (الأحد)
+  const startOfWeek=new Date(today);
+  startOfWeek.setDate(today.getDate()-todayDay);
+  // اطرح 7 أيام للأسبوع الماضي
+  startOfWeek.setDate(startOfWeek.getDate()-(weekOffset*7));
+  // أضف dayNum للحصول على اليوم المطلوب
+  const target=new Date(startOfWeek);
+  target.setDate(startOfWeek.getDate()+dayNum);
   currentAttDate=target.toISOString().split('T')[0];
   // Reset all buttons
   [0,2,3].forEach(d=>{
     const b0=$('day-btn-'+d);
     const b1=$('day-btn-'+d+'-1');
-    if(b0)b0.className='btn btn-outline btn-sm';
+    if(b0){b0.className='btn btn-outline btn-sm';b0.style.opacity='1';}
     if(b1){b1.className='btn btn-outline btn-sm';b1.style.opacity='0.8';}
   });
   // Highlight selected
@@ -2330,10 +2339,17 @@ function openPlayerStats(pid){
 let currentStatsMatchId = null;
 
 function renderStatsPage(){
+  // عبّئ select المجموعة في modal إضافة مباراة
+  const sc=$('sm-category');
+  if(sc){
+    const prev=sc.value;
+    sc.innerHTML='<option value="">— اختر المجموعة —</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+    if(prev)sc.value=prev;
+  }
   // populate match select
   const sel=$('stats-match-select');
   const prev=sel.value;
-  sel.innerHTML='<option value="">— اختر مباراة —</option>'+[...statsMatches].sort((a,b)=>b.id-a.id).map(m=>`<option value="${m.id}">${m.opponent} — ${m.date?fmtDate(m.date):'بدون تاريخ'}</option>`).join('');
+  sel.innerHTML='<option value="">— اختر مباراة —</option>'+[...statsMatches].sort((a,b)=>b.id-a.id).map(m=>{const mg=groups.find(g=>g.id==m.groupId);return`<option value="${m.id}">${m.opponent}${mg?' ('+mg.name+')':''} — ${m.date?fmtDate(m.date):'بدون تاريخ'}</option>`;}).join('');
   if(prev)sel.value=prev;
   if(currentStatsMatchId)loadMatchStats();
   renderOverallStats();
@@ -2356,7 +2372,7 @@ function saveStatsMatch(){
   const opp=$('sm-opponent').value.trim();
   if(!opp){showNotif('أدخل اسم الخصم','red');return;}
   const dateStr=buildDateStr($('sm-day').value,$('sm-month').value,$('sm-year').value);
-  const m={id:Date.now(),opponent:opp,date:dateStr||todayStr(),category:$('sm-category').value||'براعم',location:$('sm-location').value.trim()||'',scoreUs:0,scoreThem:0};
+  const m={id:Date.now(),opponent:opp,date:dateStr||todayStr(),groupId:$('sm-category').value||'',location:$('sm-location').value.trim()||'',scoreUs:0,scoreThem:0};
   statsMatches.unshift(m);
   save('stats_matches',statsMatches);
   closeModal('stats-match');
@@ -2381,8 +2397,8 @@ function loadMatchStats(){
   if(!match)return;
   $('stats-match-info').style.display='block';
   $('stats-players-section').style.display='block';
-  const catColor=match.category==='شباب'?'var(--blue)':'var(--amber)';
-  $('stats-match-header').innerHTML=`<div style="display:flex;align-items:center;gap:8px"><div style="font-weight:700;font-size:15px">⚽ ضد ${match.opponent}</div><span style="background:${catColor};color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">${match.category||'براعم'}</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">${match.date?fmtDate(match.date):''}${match.location?' • '+match.location:''}</div>`;
+  const matchGrp=groups.find(g=>g.id==match.groupId);
+  $('stats-match-header').innerHTML=`<div style="display:flex;align-items:center;gap:8px"><div style="font-weight:700;font-size:15px">⚽ ضد ${match.opponent}</div>${matchGrp?`<span style="background:var(--fire);color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">${matchGrp.name}</span>`:''}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${match.date?fmtDate(match.date):''}${match.location?' • '+match.location:''}</div>`;
   $('stats-opp-label').textContent=match.opponent;
   $('stats-score-us').value=match.scoreUs||0;
   $('stats-score-them').value=match.scoreThem||0;
@@ -2402,8 +2418,8 @@ function renderStatsTable(matchId){
   const tbody=$('stats-table-body');
   if(!players.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">لا يوجد لاعبون</td></tr>';return;}
   const mStats=matchStats[matchId]||{};
-  const matchCat=(statsMatches.find(x=>x.id===matchId)||{}).category||'';
-  const filteredP=matchCat?players.filter(p=>p.category===matchCat):players;
+  const matchGid=(statsMatches.find(x=>x.id===matchId)||{}).groupId||'';
+  const filteredP=matchGid?players.filter(p=>p.groupId==matchGid):players;
   tbody.innerHTML=[...filteredP].sort((a,b)=>(a.fname+a.lname).localeCompare(b.fname+b.lname,'ar')).map(p=>{
     const ps=mStats[p.id]||{goals:0,assists:0,saves:0,yellow:0,red:0,minutes:0};
     return`<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
