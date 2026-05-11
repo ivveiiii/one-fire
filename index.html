@@ -2037,7 +2037,8 @@ function sendMatchInviteAll(){
   const opp=$('m-opponent').value.trim();if(!opp){showNotif('أدخل اسم الأكاديمية المنافسة','red');return;}
   const dateStr=buildDateStr($('m-day').value,$('m-month').value,$('m-year').value);if(!dateStr){showNotif('حدد تاريخ المباراة','red');return;}
   const gid=$('m-group').value;
-  const targets=gid?players.filter(p=>p.groupId==gid&&p.phone):players.filter(p=>p.phone);
+  let baseP=isCoach()?getCoachPlayers():players;
+  const targets=gid?baseP.filter(p=>p.groupId==gid&&p.phone):baseP.filter(p=>p.phone);
   if(!targets.length){showNotif('لا يوجد لاعبون بأرقام هواتف','red');return;}
   const matchId=Date.now();
   matches.unshift({id:matchId,opponent:opp,date:dateStr,hour:$('m-hour').value,min:$('m-min').value,location:$('m-location').value.trim(),notes:$('m-notes').value.trim(),groupId:gid||null,created:todayStr()});
@@ -2063,7 +2064,10 @@ function sendMatchOne(pid){
   showNotif(`تم إرسال الدعوة لـ ${p.fname} ✓`,'wa');renderMatchPlayersList();
 }
 function renderMatchPlayersList(){
-  const gid=$('m-group').value;const targets=gid?players.filter(p=>p.groupId==gid):players;
+  const gid=$('m-group').value;
+  let targets=gid?players.filter(p=>p.groupId==gid):players;
+  // المدرب يشوف فئته فقط دائماً
+  if(isCoach()) targets=getCoachPlayers().filter(p=>!gid||p.groupId==gid);
   const el=$('match-players-list');let sent=0;
   if(!targets.length){el.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';$('match-sent-badge').textContent='0 تم الإرسال';return;}
   el.innerHTML=targets.map(p=>{
@@ -2078,12 +2082,28 @@ function renderMatchPlayersList(){
 }
 function renderMatchesPage(){
   const gsel=$('m-group'),gval=gsel.value;
-  gsel.innerHTML='<option value="">كل اللاعبين</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
-  gsel.value=gval;
+  // المدرب يشوف مجموعته فقط في القائمة
+  const visGroups=isCoach()?groups.filter(g=>g.name===coachGroup()||g.name.includes(coachGroup())):groups;
+  gsel.innerHTML='<option value="">كل اللاعبين</option>'+visGroups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  // تحديد مجموعة المدرب تلقائياً وإخفاء السيلكت
+  if(isCoach()&&visGroups.length>0){
+    gsel.value=gval||visGroups[0].id;
+    gsel.style.display='none'; // المدرب ما يحتاج يغير المجموعة
+  } else {
+    gsel.style.display='';
+    gsel.value=gval;
+  }
   updateMatchPreview();
+  renderMatchPlayersList();
   const el=$('past-matches');
-  if(!matches.length){el.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-trophy"></i><p>لا توجد مباريات بعد</p></div>';return;}
-  el.innerHTML=matches.map(m=>`<div class="match-card">
+  // فلترة المباريات للمدرب
+  let visMts=matches;
+  if(isCoach()){
+    const cg=groups.find(g=>g.name===coachGroup()||g.name.includes(coachGroup()));
+    if(cg) visMts=matches.filter(m=>!m.groupId||m.groupId==cg.id);
+  }
+  if(!visMts.length){el.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-trophy"></i><p>لا توجد مباريات بعد</p></div>';return;}
+  el.innerHTML=visMts.map(m=>`<div class="match-card">
     <div class="match-vs">⚽ ضد ${m.opponent}</div>
     <div class="match-meta">
       ${m.date?`<span><i class="ti ti-calendar"></i>${fmtDate(m.date)}</span>`:''}
