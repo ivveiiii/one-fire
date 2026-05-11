@@ -222,14 +222,53 @@ select{cursor:pointer;background-image:none}
       <div class="login-sub">أكاديمية كرة القدم</div>
     </div>
     <div class="login-card">
-      <div class="form-group">
-        <div class="form-label" style="color:rgba(255,255,255,.6);text-align:center;margin-bottom:10px;font-size:13px">أدخل رمز الدخول</div>
-        <input type="password" id="login-pass" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif">
-        <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
+      <!-- Step 1: اختيار نوع المستخدم -->
+      <div id="login-step1">
+        <div style="font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:14px">اختر نوع الدخول</div>
+        <div style="display:flex;gap:10px">
+          <button onclick="selectLoginType('admin')" style="flex:1;padding:16px 10px;border-radius:14px;border:1px solid rgba(255,77,0,.3);background:rgba(255,77,0,.1);color:#fff;font-family:'Tajawal',sans-serif;font-size:15px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,77,0,.25)'" onmouseout="this.style.background='rgba(255,77,0,.1)'">
+            <div style="font-size:26px;margin-bottom:6px">🛡️</div>
+            <div style="font-weight:700">الإدارة</div>
+          </button>
+          <button onclick="selectLoginType('coach')" style="flex:1;padding:16px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:15px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+            <div style="font-size:26px;margin-bottom:6px">👨‍🏫</div>
+            <div style="font-weight:700">المدربون</div>
+          </button>
+        </div>
       </div>
-      <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:4px">
-        <i class="ti ti-login"></i> دخول
-      </button>
+      <!-- Step 2a: رمز الإدارة -->
+      <div id="login-step-admin" style="display:none">
+        <button onclick="backToStep1()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;margin-bottom:12px;padding:0">← رجوع</button>
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-size:28px">🛡️</div>
+          <div style="font-weight:700;font-size:15px;margin-top:4px">الإدارة</div>
+        </div>
+        <input type="password" id="login-pass" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif;box-sizing:border-box">
+        <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
+        <button class="btn btn-fire btn-full" onclick="doLogin()" style="font-size:16px;padding:14px;margin-top:10px">
+          <i class="ti ti-login"></i> دخول
+        </button>
+      </div>
+      <!-- Step 2b: اختيار المدرب -->
+      <div id="login-step-coach" style="display:none">
+        <button onclick="backToStep1()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;margin-bottom:12px;padding:0">← رجوع</button>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:12px">اختر المدرب</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="coach-btns"></div>
+      </div>
+      <!-- Step 3: رمز المدرب -->
+      <div id="login-step-coach-pass" style="display:none">
+        <button onclick="backToCoaches()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;margin-bottom:12px;padding:0">← رجوع</button>
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-size:28px">👨‍🏫</div>
+          <div style="font-weight:700;font-size:15px;margin-top:4px" id="selected-coach-name"></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="selected-coach-group"></div>
+        </div>
+        <input type="password" id="login-pass-coach" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')doLoginCoach()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif;box-sizing:border-box">
+        <div id="login-err-coach" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
+        <button class="btn btn-fire btn-full" onclick="doLoginCoach()" style="font-size:16px;padding:14px;margin-top:10px">
+          <i class="ti ti-login"></i> دخول
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -600,11 +639,11 @@ select{cursor:pointer;background-image:none}
   </div><!-- /content-area -->
 
   <!-- Bottom Nav -->
-  <div class="bottom-nav">
-    <button class="nav-tab active" onclick="showPage('dashboard',this)" data-page="dashboard"><i class="ti ti-dashboard"></i><span>الرئيسية</span></button>
-    <button class="nav-tab" onclick="showPage('players',this)" data-page="players"><i class="ti ti-users"></i><span>اللاعبون</span></button>
-    <button class="nav-tab" onclick="showPage('attendance',this)" data-page="attendance"><i class="ti ti-calendar-check"></i><span>الحضور</span></button>
-    <button class="nav-tab" onclick="showPage('subscriptions',this)" data-page="subscriptions"><i class="ti ti-credit-card"></i><span>الاشتراكات</span></button>
+  <div class="bottom-nav" id="bottom-nav">
+    <button class="nav-tab active" onclick="showPage('dashboard',this)" data-page="dashboard" data-nav="dashboard"><i class="ti ti-dashboard"></i><span>الرئيسية</span></button>
+    <button class="nav-tab" onclick="showPage('players',this)" data-page="players" data-nav="players"><i class="ti ti-users"></i><span>اللاعبون</span></button>
+    <button class="nav-tab" onclick="showPage('attendance',this)" data-page="attendance" data-nav="attendance"><i class="ti ti-calendar-check"></i><span>الحضور</span></button>
+    <button class="nav-tab" onclick="showPage('subscriptions',this)" data-page="subscriptions" data-nav="subscriptions"><i class="ti ti-credit-card"></i><span>الاشتراكات</span></button>
     <button class="nav-tab" onclick="toggleMoreMenu()" id="more-tab"><i class="ti ti-dots"></i><span>المزيد</span></button>
   </div>
   <!-- More menu -->
@@ -926,49 +965,118 @@ async function loadAllData(){
 function save(key,value){ fbSave(key,value); }
 
 // Default users — passwords stored as plain text (simple academy use)
-let users = DB.load('users',[
-  {id:'admin', name:'المدير', role:'admin', pass:'305'},
-]);
+const DEFAULT_USERS = [
+  {id:'admin',  name:'المدير',              role:'admin',   pass:'305',  group:''},
+  {id:'coach1', name:'ثامر المطيري',        role:'coach',   pass:'2001', group:'براعم'},
+  {id:'coach2', name:'بدر المطيري',         role:'coach',   pass:'2002', group:'براعم'},
+  {id:'coach3', name:'عبدالعزيز العتيبي',   role:'coach',   pass:'2003', group:'شباب'},
+  {id:'coach4', name:'عبدالكريم العتيبي',   role:'coach',   pass:'2004', group:'شباب'},
+];
+let users = DEFAULT_USERS;
 
 let currentUser = null;
 
 let selectedUserId = null;
 
-function renderLoginUsers(){
-  const el=$('user-btns');
-  if(!el)return;
-  el.innerHTML=users.map(u=>`
-    <button onclick="selectUser('${u.id}')" id="ubtn-${u.id}"
-      style="padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;text-align:right;width:100%">
-      <span style="font-size:18px">${u.role==='admin'?'🛡️':'👨‍🏫'}</span>
-      <div>
-        <div style="font-weight:600">${u.name}</div>
-        <div style="font-size:11px;opacity:.5">${u.role==='admin'?'مدير الأكاديمية':'مدرب'}</div>
-      </div>
-    </button>`).join('');
+function renderLoginUsers(){}
+function selectUser(uid){}
+
+function selectLoginType(type){
+  $('login-step1').style.display='none';
+  if(type==='admin'){
+    $('login-step-admin').style.display='block';
+    setTimeout(()=>$('login-pass').focus(),100);
+  } else {
+    $('login-step-coach').style.display='block';
+    const coaches=users.filter(u=>u.role==='coach');
+    $('coach-btns').innerHTML=coaches.map(u=>`
+      <button onclick="selectCoach('${u.id}')"
+        style="padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;text-align:right">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--fire);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${u.name.substring(0,2)}</div>
+        <div>
+          <div style="font-weight:600">${u.name}</div>
+          <div style="font-size:11px;opacity:.5">فئة ${u.group}</div>
+        </div>
+      </button>`).join('');
+  }
 }
 
-function selectUser(uid){}
+function backToStep1(){
+  $('login-step1').style.display='block';
+  $('login-step-admin').style.display='none';
+  $('login-step-coach').style.display='none';
+  $('login-step-coach-pass').style.display='none';
+  $('login-pass').value='';
+  $('login-err').style.display='none';
+}
+
+function backToCoaches(){
+  $('login-step-coach').style.display='block';
+  $('login-step-coach-pass').style.display='none';
+  $('login-pass-coach').value='';
+  $('login-err-coach').style.display='none';
+  selectedUserId=null;
+}
+
+function selectCoach(uid){
+  selectedUserId=uid;
+  const u=users.find(x=>x.id===uid);
+  if(!u)return;
+  $('login-step-coach').style.display='none';
+  $('login-step-coach-pass').style.display='block';
+  $('selected-coach-name').textContent=u.name;
+  $('selected-coach-group').textContent='فئة '+u.group;
+  $('login-pass-coach').value='';
+  $('login-err-coach').style.display='none';
+  setTimeout(()=>$('login-pass-coach').focus(),100);
+}
+
+async function doLoginCoach(){
+  const u=users.find(x=>x.id===selectedUserId);
+  const pass=($('login-pass-coach').value||'').trim();
+  if(!u||pass!==u.pass){
+    $('login-err-coach').style.display='block';
+    $('login-pass-coach').value='';
+    $('login-pass-coach').focus();
+    return;
+  }
+  $('login-err-coach').style.display='none';
+  currentUser=u;
+  finishLogin();
+}
+
 async function doLogin(){
   const pass=($('login-pass').value||'').trim();
-  const MASTER_PASS='305';
-  if(pass!==MASTER_PASS){
+  if(pass!=='305'){
     $('login-err').style.display='block';
     $('login-pass').value='';
     $('login-pass').focus();
     return;
   }
   $('login-err').style.display='none';
-  currentUser={id:'admin',name:'المدير',role:'admin',pass:MASTER_PASS};
+  currentUser={id:'admin',name:'المدير',role:'admin',pass:'305',group:''};
+  finishLogin();
+}
+
+function finishLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('app').style.flexDirection='column';
   document.getElementById('app').style.height='100%';
-  document.getElementById('header-user-role').textContent='المدير';
+  document.getElementById('header-user-role').textContent=currentUser.role==='coach'?currentUser.name+' — فئة '+currentUser.group:currentUser.name;
   initDateSelects();
-  renderDashboard();
   applyRolePermissions();
-  loadAllData().then(()=>{renderDashboard();initDateSelects();}).catch(e=>console.log('err',e));
+  if(currentUser.role==='coach'){
+    showPage('attendance',null);
+  } else {
+    renderDashboard();
+    showPage('dashboard',null);
+  }
+  loadAllData().then(()=>{
+    if(currentUser.role==='coach') showPage('attendance',null);
+    else renderDashboard();
+    initDateSelects();
+  }).catch(e=>console.log('err',e));
 }
 function refreshCurrentPage(){
   const icon=$('refresh-icon');
@@ -1008,10 +1116,43 @@ function doLogout(){
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
 }
+function isCoach(){ return currentUser&&currentUser.role==='coach'; }
+function coachGroup(){ return currentUser&&currentUser.group||''; }
+
+// فلترة اللاعبين بالمجموعة للمدرب
+function getCoachPlayers(){
+  if(!isCoach()) return players;
+  // نبحث عن المجموعة اللي تطابق اسمها فئة المدرب
+  const grp=groups.find(g=>g.name===coachGroup()||g.name.includes(coachGroup()));
+  if(!grp) return players;
+  return players.filter(p=>p.groupId==grp.id);
+}
+
 function applyRolePermissions(){
   const isAdmin=currentUser&&currentUser.role==='admin';
-  // Settings user management only for admin
-  document.getElementById('settings-card-users').style.display=isAdmin?'block':'none';
+  const coach=isCoach();
+  // إعادة بناء الـ navbar حسب الدور
+  const nav=document.getElementById('bottom-nav');
+  if(nav){
+    if(coach){
+      // المدرب: الحضور + المباريات + الإحصائيات فقط
+      nav.innerHTML=`
+        <button class="nav-tab active" onclick="showPage('attendance',this)" data-page="attendance"><i class="ti ti-calendar-check"></i><span>الحضور</span></button>
+        <button class="nav-tab" onclick="showPage('matches',this)" data-page="matches"><i class="ti ti-trophy"></i><span>المباريات</span></button>
+        <button class="nav-tab" onclick="showPage('stats',this)" data-page="stats"><i class="ti ti-chart-bar"></i><span>الإحصائيات</span></button>`;
+    } else {
+      // المدير: كل شيء
+      nav.innerHTML=`
+        <button class="nav-tab active" onclick="showPage('dashboard',this)" data-page="dashboard"><i class="ti ti-dashboard"></i><span>الرئيسية</span></button>
+        <button class="nav-tab" onclick="showPage('players',this)" data-page="players"><i class="ti ti-users"></i><span>اللاعبون</span></button>
+        <button class="nav-tab" onclick="showPage('attendance',this)" data-page="attendance"><i class="ti ti-calendar-check"></i><span>الحضور</span></button>
+        <button class="nav-tab" onclick="showPage('subscriptions',this)" data-page="subscriptions"><i class="ti ti-credit-card"></i><span>الاشتراكات</span></button>
+        <button class="nav-tab" onclick="toggleMoreMenu()" id="more-tab"><i class="ti ti-dots"></i><span>المزيد</span></button>`;
+    }
+  }
+  // Settings
+  const scu=document.getElementById('settings-card-users');
+  if(scu) scu.style.display=isAdmin?'block':'none';
 }
 function renderUsersSettings(){
   const el=document.getElementById('users-settings-list');
@@ -1315,6 +1456,11 @@ function deletePlayer(id){
   renderPlayers();renderDashboard();showNotif('تم الحذف','red');
 }
 function renderPlayers(){
+  if(isCoach()){
+    // المدرب ما يشوف صفحة اللاعبين الكاملة
+    showPage('attendance',null);
+    return;
+  }
   const q=$('player-search').value.toLowerCase();
   const gf=$('player-group-filter').value;const sf=$('player-status-filter').value;
   const gsel=$('player-group-filter'),gval=gsel.value;
@@ -1443,8 +1589,9 @@ function renderAttForSelectedDate(){
   if(lbl)lbl.textContent='تسجيل حضور — '+dayName;
   if(dlbl)dlbl.textContent=fmtDate(currentAttDate);
   const body=$('att-today-body');
-  if(!players.length){body.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';updateAttBadge();return;}
-  const sorted=[...players].sort((a,b)=>{
+  const coachPlayersList=getCoachPlayers();
+  if(!coachPlayersList.length){body.innerHTML='<div class="empty" style="padding:20px"><i class="ti ti-users"></i><p>لا يوجد لاعبون</p></div>';updateAttBadge();return;}
+  const sorted=[...coachPlayersList].sort((a,b)=>{
     const aP=!!attendance[currentAttDate+'_'+a.id];
     const bP=!!attendance[currentAttDate+'_'+b.id];
     return aP===bP?0:aP?1:-1;
@@ -1647,11 +1794,12 @@ function markAllForDateStatus(status){
   updateDashAtt();
 }
 function updateAttBadge(){
-  const p=players.filter(x=>{
+  const cp=getCoachPlayers();
+  const p=cp.filter(x=>{
     const v=attendance[currentAttDate+'_'+x.id];
     return v&&v!==false;
   }).length;
-  $('att-count-badge').textContent=`${p} / ${players.length}`;
+  $('att-count-badge').textContent=`${p} / ${cp.length}`;
 }
 function updateDashAtt(){
   const today=todayStr();const p=players.filter(x=>attendance[today+'_'+x.id]).length;
@@ -2389,13 +2537,23 @@ function renderStatsPage(){
   const sc=$('sm-category');
   if(sc){
     const prev=sc.value;
-    sc.innerHTML='<option value="">— اختر المجموعة —</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+    // المدرب يشوف مجموعته فقط
+    const visGroups=isCoach()?groups.filter(g=>g.name===coachGroup()||g.name.includes(coachGroup())):groups;
+    sc.innerHTML='<option value="">— اختر المجموعة —</option>'+visGroups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
     if(prev)sc.value=prev;
+    // تحديد المجموعة تلقائياً للمدرب
+    if(isCoach()&&visGroups.length===1&&!prev) sc.value=visGroups[0].id;
   }
   // populate match select
   const sel=$('stats-match-select');
   const prev=sel.value;
-  sel.innerHTML='<option value="">— اختر مباراة —</option>'+[...statsMatches].sort((a,b)=>b.id-a.id).map(m=>{const mg=groups.find(g=>g.id==m.groupId);return`<option value="${m.id}">${m.opponent}${mg?' ('+mg.name+')':''} — ${m.date?fmtDate(m.date):'بدون تاريخ'}</option>`;}).join('');
+  // المدرب يشوف مباريات مجموعته فقط
+  let visMts=[...statsMatches].sort((a,b)=>b.id-a.id);
+  if(isCoach()){
+    const cg=groups.find(g=>g.name===coachGroup()||g.name.includes(coachGroup()));
+    if(cg) visMts=visMts.filter(m=>m.groupId==cg.id);
+  }
+  sel.innerHTML='<option value="">— اختر مباراة —</option>'+visMts.map(m=>{const mg=groups.find(g=>g.id==m.groupId);return`<option value="${m.id}">${m.opponent}${mg?' ('+mg.name+')':''} — ${m.date?fmtDate(m.date):'بدون تاريخ'}</option>`;}).join('');
   if(prev)sel.value=prev;
   if(currentStatsMatchId)loadMatchStats();
   renderOverallStats();
