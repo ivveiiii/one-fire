@@ -1381,7 +1381,42 @@ function populateSubPlayer(){
 // ============================================================
 //  PLAYERS
 // ============================================================
-function openAddPlayer(){$('pl-modal-title').textContent='🔥 إضافة لاعب جديد';openModal('player');['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');$('pl-age').value='';$('pl-group').value='';$('pl-pos').value='لا يوجد';}
+function getNextCheckinCode(){
+  // أعلى رقم موجود + 1
+  const codes=players.map(p=>parseInt(p.checkinCode)||0).filter(n=>n>0);
+  return codes.length?Math.max(...codes)+1:100;
+}
+
+function renumberPlayers(){
+  if(!players.length){showNotif('لا يوجد لاعبون','red');return;}
+  if(!confirm('سيتم إعادة ترقيم أرقام الحضور:\n• الشباب: 100، 101، 102...\n• البراعم: تكمل من بعد الشباب\nهل أنت متأكد؟'))return;
+  const shGroup=groups.find(g=>g.name.includes('شباب'));
+  const brGroup=groups.find(g=>g.name.includes('براعم'));
+  const shabab=players.filter(p=>shGroup&&p.groupId==shGroup.id);
+  const baraem=players.filter(p=>brGroup&&p.groupId==brGroup.id);
+  const others=players.filter(p=>(!shGroup||p.groupId!=shGroup.id)&&(!brGroup||p.groupId!=brGroup.id));
+  let counter=100;
+  [...shabab,...baraem,...others].forEach(p=>{
+    const pl=players.find(x=>x.id===p.id);
+    if(pl) pl.checkinCode=String(counter++);
+  });
+  save('players',players);
+  if(db){try{db.ref('academy/players').set(players).catch(e=>console.log(e));}catch(e){}}
+  showNotif('تم الترقيم ✓ الشباب من 100 ثم البراعم','green');
+}
+
+function openAddPlayer(){
+  $('pl-modal-title').textContent='🔥 إضافة لاعب جديد';
+  openModal('player');
+  ['pl-fname','pl-lname','pl-phone','pl-notes'].forEach(id=>$(id).value='');
+  $('pl-age').value='';
+  $('pl-group').value='';
+  $('pl-pos').value='لا يوجد';
+  $('pl-status-group').style.display='block';
+  $('pl-status').value='تجربة';
+  // رمز الحضور تلقائي
+  $('pl-code').value=getNextCheckinCode();
+}
 function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
@@ -1447,7 +1482,7 @@ function savePlayer(){
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||null,groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||String(getNextCheckinCode()),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
@@ -1489,7 +1524,7 @@ function renderPlayers(){
     const attP=Object.keys(attendance).filter(k=>k.endsWith('_'+p.id)&&attendance[k]).length;
     const attT=Object.keys(attendance).filter(k=>k.endsWith('_'+p.id)).length;
     const pct=attT?Math.round(attP/attT*100):0;
-    const statColor={نشط:'var(--green)',منتهي:'var(--red)',موقوف:'var(--amber)'}[p.status]||'var(--muted)';
+    const statColor={نشط:'var(--green)',منتهي:'var(--red)',موقوف:'var(--amber)',تجربة:'#F97316'}[p.status]||'var(--muted)';
     return`<div class="player-row">
       <div class="avatar av-md">${getInitials(p.fname+' '+p.lname)}</div>
       <div class="player-row-info">
@@ -1501,6 +1536,7 @@ function renderPlayers(){
           ${p.phone2?`<span style="color:var(--muted);direction:ltr">${p.phone2} 🆘</span>`:''}
           ${p.checkinCode?`<span style="color:var(--muted)">🔑 ${p.checkinCode}</span>`:'<span style="color:var(--red);font-size:10px">لا يوجد رمز حضور</span>'}
           <span style="color:${statColor}">● ${p.status}</span>
+          ${p.createdAt?`<span style="font-size:10px;color:var(--muted)"> • سُجِّل ${fmtDate(p.createdAt)}</span>`:''}
         </div>
         ${p.docs?`<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
           <span style="font-size:10px;color:${p.docs.id?'var(--green)':'var(--red)'}">${p.docs.id?'✓':'✗'} هوية</span>
@@ -1887,6 +1923,19 @@ function addSubscription(){
   logActivity(buildNotif('sub',p?p.fname+' '+p.lname:''),'var(--blue)');
   closeModal('sub');renderSubs();renderDashboard();showNotif('تم الاشتراك ✓','green');
 }
+function editSubEndDate(sid){
+  const s=subscriptions.find(x=>x.id===sid);
+  if(!s)return;
+  const p=players.find(x=>x.id===s.playerId);
+  const name=p?p.fname+' '+p.lname:'';
+  const newDate=prompt('تعديل تاريخ انتهاء اشتراك '+name+'\nالتاريخ الحالي: '+(s.end||'غير محدد')+'\nأدخل التاريخ الجديد (YYYY-MM-DD):',s.end||'');
+  if(!newDate)return;
+  s.end=newDate;
+  save('subs',subscriptions);
+  renderSubs();
+  showNotif('تم تعديل التاريخ ✓','green');
+}
+
 function renderSubs(){
   const today=new Date();let active=0,expired=0,revenue=0;
   subscriptions.forEach(s=>{const e=new Date(s.end);if(e>=today&&s.status==='نشط'){active++;revenue+=s.amount;}else expired++;});
@@ -1900,7 +1949,7 @@ function renderSubs(){
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <div class="avatar av-sm">${getInitials(p?p.fname+' '+p.lname:'؟')}</div>
         <div style="flex:1"><div style="font-weight:600;font-size:13px">${p?p.fname+' '+p.lname:'محذوف'}</div></div>
-        <span class="badge ${st==='نشط'?'badge-green':st==='منتهي'?'badge-red':'badge-amber'}">${st}</span>
+        <span class="badge ${st==='نشط'?'badge-green':st==='منتهي'?'badge-red':st==='تجربة'?'badge-fire':'badge-amber'}">${st}</span>
       </div>
       <div class="match-meta">
         <span><i class="ti ti-calendar"></i>${fmtDate(s.start)} — ${fmtDate(s.end)}</span>
