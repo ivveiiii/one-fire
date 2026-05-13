@@ -309,6 +309,72 @@ select{cursor:pointer;background-image:none}
   </div>
 </div>
 
+<!-- Edit Subscription Modal -->
+<div class="modal-overlay" id="modal-edit-sub">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-sub-title">✏️ تعديل الاشتراك</div>
+    <input type="hidden" id="edit-sub-id">
+    <div class="form-group"><div class="form-label">نوع الاشتراك</div>
+      <select id="edit-sub-type" onchange="updateEditSubAmount()">
+        <option value="مفتوح">🎁 مفتوح (مجاني)</option>
+        <option value="شهري">شهري</option>
+        <option value="فصلي">3 أشهر</option>
+        <option value="نصف سنوي">6 أشهر</option>
+        <option value="سنوي">سنة كاملة</option>
+      </select>
+    </div>
+    <div class="form-group"><div class="form-label">المبلغ (ريال)</div>
+      <input type="number" id="edit-sub-amount" placeholder="0" min="0">
+    </div>
+    <div class="form-group"><div class="form-label">تاريخ البداية</div>
+      <input type="date" id="edit-sub-start">
+    </div>
+    <div class="form-group"><div class="form-label">تاريخ الانتهاء</div>
+      <input type="date" id="edit-sub-end">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-fire" style="flex:1" onclick="saveEditSub()"><i class="ti ti-check"></i> حفظ التعديل</button>
+      <button class="btn btn-outline" onclick="closeModal('edit-sub')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trial Player Modal -->
+<div class="modal-overlay" id="modal-trial-player">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔶 إضافة لاعب تجربة</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><div class="form-label">الاسم الأول *</div><input id="tr-fname" placeholder="الاسم الأول"></div>
+      <div class="form-group"><div class="form-label">اسم العائلة</div><input id="tr-lname" placeholder="اسم العائلة"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><div class="form-label">العمر</div><input type="number" id="tr-age" placeholder="السن" min="4" max="40"></div>
+      <div class="form-group"><div class="form-label">المركز</div>
+        <select id="tr-pos">
+          <option value="لا يوجد">لا يوجد</option>
+          <option value="حارس مرمى">حارس مرمى</option>
+          <option value="مدافع">مدافع</option>
+          <option value="وسط">وسط</option>
+          <option value="جناح">جناح</option>
+          <option value="مهاجم">مهاجم</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><div class="form-label">رقم الجوال</div><input type="tel" id="tr-phone" placeholder="05xxxxxxxx" inputmode="numeric"></div>
+    <div class="form-group"><div class="form-label">رقم بديل / ولي الأمر</div><input type="tel" id="tr-phone2" placeholder="05xxxxxxxx" inputmode="numeric"></div>
+    <div class="form-group"><div class="form-label">المجموعة</div><select id="tr-group"><option value="">— اختر —</option></select></div>
+    <div style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);border-radius:10px;padding:10px;font-size:12px;color:#F97316;margin-bottom:12px">
+      🔶 سيتم تسجيله كلاعب تجربة — تاريخ التسجيل: <strong id="tr-date"></strong>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-fire" style="flex:1" onclick="saveTrialPlayer()"><i class="ti ti-check"></i> تسجيل تجربة</button>
+      <button class="btn btn-outline" onclick="closeModal('trial-player')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Announce Modal -->
 <div class="modal-overlay" id="modal-announce">
   <div class="modal">
@@ -410,7 +476,9 @@ select{cursor:pointer;background-image:none}
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
-        <button class="btn btn-sm btn-outline" style="flex:1" onclick="toggleImport()"><i class="ti ti-file-import"></i> استيراد من Excel</button>
+        <button class="btn btn-sm btn-fire" style="flex:1" onclick="openAddPlayer()"><i class="ti ti-user-plus"></i> لاعب جديد</button>
+        <button class="btn btn-sm" style="flex:1;background:rgba(251,146,60,.15);color:#F97316;border:1px solid rgba(251,146,60,.3)" onclick="openAddTrialPlayer()"><i class="ti ti-user-check"></i> لاعب تجربة</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleImport()"><i class="ti ti-file-import"></i></button>
       </div>
       <div id="players-list"></div>
     </div>
@@ -1405,6 +1473,45 @@ function renumberPlayers(){
   showNotif('تم الترقيم ✓ الشباب من 100 ثم البراعم','green');
 }
 
+function openAddTrialPlayer(){
+  openModal('trial-player');
+  ['tr-fname','tr-lname','tr-phone','tr-phone2'].forEach(id=>$(id).value='');
+  $('tr-age').value='';
+  $('tr-pos').value='لا يوجد';
+  $('tr-date').textContent=fmtDate(todayStr());
+  // عبّئ المجموعات
+  const grpSel=$('tr-group');
+  grpSel.innerHTML='<option value="">— اختر —</option>'+groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+}
+
+function saveTrialPlayer(){
+  const fn=$('tr-fname').value.trim();
+  if(!fn){showNotif('أدخل الاسم الأول','red');return;}
+  const p={
+    id:Date.now(),
+    fname:fn,
+    lname:$('tr-lname').value.trim(),
+    age:parseInt($('tr-age').value)||null,
+    phone:$('tr-phone').value.trim(),
+    phone2:$('tr-phone2').value.trim()||null,
+    position:$('tr-pos').value||'لا يوجد',
+    groupId:$('tr-group').value||null,
+    checkinCode:null,
+    status:'تجربة',
+    joinDate:todayStr(),
+    createdAt:todayStr(),
+    docs:{id:false,iqama:false,family:false,terms:false,health:false},
+    notes:'لاعب تجربة'
+  };
+  players.push(p);
+  save('players',players);
+  logActivity(`تجربة جديدة: ${fn} ${p.lname}`,'#F97316');
+  closeModal('trial-player');
+  renderPlayers();
+  renderDashboard();
+  showNotif('تم تسجيل لاعب التجربة ✓','green');
+}
+
 function openAddPlayer(){
   $('pl-modal-title').textContent='🔥 إضافة لاعب جديد';
   openModal('player');
@@ -1923,17 +2030,40 @@ function addSubscription(){
   logActivity(buildNotif('sub',p?p.fname+' '+p.lname:''),'var(--blue)');
   closeModal('sub');renderSubs();renderDashboard();showNotif('تم الاشتراك ✓','green');
 }
-function editSubEndDate(sid){
+function editSubEndDate(sid){ openEditSub(sid); }
+
+function openEditSub(sid){
   const s=subscriptions.find(x=>x.id===sid);
   if(!s)return;
   const p=players.find(x=>x.id===s.playerId);
-  const name=p?p.fname+' '+p.lname:'';
-  const newDate=prompt('تعديل تاريخ انتهاء اشتراك '+name+'\nالتاريخ الحالي: '+(s.end||'غير محدد')+'\nأدخل التاريخ الجديد (YYYY-MM-DD):',s.end||'');
-  if(!newDate)return;
-  s.end=newDate;
+  $('edit-sub-id').value=sid;
+  $('edit-sub-title').textContent='✏️ تعديل اشتراك '+(p?p.fname+' '+p.lname:'');
+  $('edit-sub-type').value=s.type||'شهري';
+  $('edit-sub-amount').value=s.amount||0;
+  $('edit-sub-start').value=s.start||todayStr();
+  $('edit-sub-end').value=s.end||'';
+  openModal('edit-sub');
+}
+
+function updateEditSubAmount(){
+  const map={مفتوح:0,شهري:prices.monthly||250,فصلي:prices.quarter||750,'نصف سنوي':prices.half||1500,سنوي:prices.annual||3000};
+  $('edit-sub-amount').value=map[$('edit-sub-type').value]??0;
+}
+
+function saveEditSub(){
+  const sid=parseInt($('edit-sub-id').value);
+  const s=subscriptions.find(x=>x.id===sid);
+  if(!s)return;
+  s.type=$('edit-sub-type').value;
+  s.amount=parseInt($('edit-sub-amount').value)||0;
+  s.start=$('edit-sub-start').value;
+  s.end=$('edit-sub-end').value;
+  s.status=s.end&&new Date(s.end)<new Date()?'منتهي':'نشط';
+  if(s.type==='مفتوح') s.status='نشط';
   save('subs',subscriptions);
+  closeModal('edit-sub');
   renderSubs();
-  showNotif('تم تعديل التاريخ ✓','green');
+  showNotif('تم تعديل الاشتراك ✓','green');
 }
 
 function renderSubs(){
@@ -1959,7 +2089,7 @@ function renderSubs(){
       </div>
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-xs btn-fire" onclick="renewSub(${s.id})">تجديد</button>
-        <button class="btn btn-xs btn-blue" onclick="editSubEndDate(${s.id})"><i class="ti ti-calendar-event"></i> تعديل التاريخ</button>
+        <button class="btn btn-xs btn-blue" onclick="openEditSub(${s.id})"><i class="ti ti-edit"></i> تعديل الاشتراك</button>
         ${p&&p.phone&&(exp||s.status!=='نشط')?`<button class="btn btn-xs btn-wa" onclick="sendSubExpiredWA(${p.id})">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           تنبيه انتهاء
@@ -2086,32 +2216,48 @@ function buildMatchMsg(playerName){
   msg+=`\nيرجى تأكيد الحضور بالرد:\n✅ *أوافق* — سيحضر اللاعب\n❌ *لا أوافق* — لن يحضر\n\nمع تحيات،\n*${academy}*`;
   return msg;
 }
+function buildGroupMatchMsg(groupName){
+  const opp=$('m-opponent').value.trim()||'...';
+  const dateStr=buildDateStr($('m-day').value,$('m-month').value,$('m-year').value);
+  const hour=$('m-hour').value;const min=$('m-min').value;
+  const loc=$('m-location').value.trim();
+  const notes=$('m-notes').value.trim();
+  const grp=groupName?`🏷️ الفئة: ${groupName}`:'';
+  const coaches_g=groupName?users.filter(u=>u.role==='coach'&&u.group===groupName):[]; 
+  const coachLine=coaches_g.length?`👨‍🏫 المدرب: ${coaches_g.map(c=>c.name).join(' & ')}`:'';
+  return [
+    `🏆 *دعوة مباراة — أكاديمية ون فاير 🔥*`,
+    ``,
+    `⚔️ ضد: *${opp}*`,
+    dateStr?`📅 ${fmtDate(dateStr)}`:'',
+    (hour&&min)?`⏰ الساعة ${hour}:${min}`:'',
+    loc?`📍 ${loc}`:'',
+    grp,
+    coachLine,
+    notes?`📝 ${notes}`:'',
+    ``,
+    `الرجاء الالتزام بالحضور في الوقت المحدد ✅`
+  ].filter(Boolean).join('\n');
+}
+
 function updateMatchPreview(){
   const opp=$('m-opponent').value.trim();const dateStr=buildDateStr($('m-day').value,$('m-month').value,$('m-year').value);
   const prev=$('match-msg-preview');
   if(!opp&&!dateStr){prev.textContent='أدخل تفاصيل المباراة...';prev.style.color='var(--muted)';return;}
-  prev.textContent=buildMatchMsg('اسم اللاعب');prev.style.color='var(--text)';
+  // عرض رسالة الجروب في المعاينة
+  prev.textContent=buildGroupMatchMsg('');prev.style.color='var(--text)';
   renderMatchPlayersList();
 }
 function sendMatchInviteGroup(groupName){
-  const msg=$('match-msg-preview').innerText||$('match-msg-preview').textContent;
-  if(!msg||msg==='أدخل تفاصيل المباراة...'){showNotif('أدخل تفاصيل المباراة أولاً','red');return;}
-  // ابحث عن المجموعة
-  const grp=groups.find(g=>g.name===groupName||g.name.includes(groupName));
-  const groupPlayers=grp?players.filter(p=>p.groupId==grp.id&&p.phone):players.filter(p=>p.phone);
-  if(!groupPlayers.length){showNotif('لا يوجد لاعبون في هذه الفئة','red');return;}
-  // ابن رسالة الجروب مع أسماء المدربين
-  const coaches_group=users.filter(u=>u.role==='coach'&&u.group===groupName);
-  const coachNames=coaches_group.map(c=>c.name).join(' & ');
-  const fullMsg=msg+(coachNames?`
-
-👨‍🏫 المدربون: ${coachNames}`:'');
-  // افتح واتساب بأول رقم (رسالة الجروب)
-  const phone=groupPlayers[0].phone.replace(/\D/g,'');
-  const intl=phone.startsWith('0')?'966'+phone.slice(1):phone;
-  const url=`https://wa.me/${intl}?text=${encodeURIComponent(fullMsg)}`;
+  const opp=$('m-opponent').value.trim();
+  if(!opp){showNotif('أدخل اسم الأكاديمية المنافسة أولاً','red');return;}
+  const fullMsg=buildGroupMatchMsg(groupName);
+  // نسخ الرسالة للحافظة
+  if(navigator.clipboard){navigator.clipboard.writeText(fullMsg).catch(()=>{});}
+  // افتح واتساب عام (رسالة جروب)
+  const url=`https://wa.me/?text=${encodeURIComponent(fullMsg)}`;
   window.open(url,'_blank');
-  showNotif(`تم فتح رسالة جروب ${groupName} ✓`,'green');
+  showNotif(`تم فتح رسالة جروب ${groupName||'الكل'} — الصقها في الجروب ✓`,'green');
 }
 
 function sendMatchInviteAll(){
