@@ -397,7 +397,7 @@ select{cursor:pointer;background-image:none}
       <div class="form-grid" style="margin-bottom:12px">
         <select id="player-group-filter" onchange="renderPlayers()"><option value="">كل المجموعات</option></select>
         <select id="player-status-filter" onchange="renderPlayers()">
-          <option value="">كل الحالات</option><option value="نشط">نشط</option><option value="منتهي">منتهي</option><option value="موقوف">موقوف</option>
+          <option value="">كل الحالات</option><option value="نشط">نشط</option><option value="تجربة">🔶 تجربة</option><option value="منتهي">منتهي</option><option value="موقوف">موقوف</option>
         </select>
       </div>
       <!-- Import Section -->
@@ -509,10 +509,18 @@ select{cursor:pointer;background-image:none}
         <div class="form-group"><div class="form-label">المجموعة المشاركة</div><select id="m-group" onchange="renderMatchPlayersList()"><option value="">كل اللاعبين</option></select></div>
         <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="m-notes" rows="2" placeholder="أي تفاصيل..." oninput="updateMatchPreview()"></textarea></div>
         <div style="margin-bottom:12px"><div class="form-label">معاينة الرسالة</div><div class="msg-preview" id="match-msg-preview" style="color:var(--muted)">أدخل تفاصيل المباراة...</div></div>
-        <button class="btn btn-wa-all btn-full" onclick="sendMatchInviteAll()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          إرسال الدعوة للجميع
-        </button>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600">إرسال رسالة الجروب</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-wa-all btn-full" onclick="sendMatchInviteAll()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> إرسال للجميع
+          </button>
+          <button class="btn btn-wa-all btn-full" onclick="sendMatchInviteGroup('براعم')" style="background:#075E54">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> 🟠 رسالة جروب البراعم
+          </button>
+          <button class="btn btn-wa-all btn-full" onclick="sendMatchInviteGroup('شباب')" style="background:#075E54">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> 🔵 رسالة جروب الشباب
+          </button>
+        </div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">إرسال فردي</span><span class="badge badge-blue" id="match-sent-badge">0 تم الإرسال</span></div>
@@ -687,7 +695,7 @@ select{cursor:pointer;background-image:none}
     </div>
     <div class="form-group" id="pl-status-group" style="display:none">
       <div class="form-label">الحالة</div>
-      <select id="pl-status"><option value="نشط">نشط</option><option value="موقوف">موقوف</option><option value="منتهي">منتهي الاشتراك</option></select>
+      <select id="pl-status"><option value="نشط">نشط</option><option value="تجربة">🔶 تجربة</option><option value="موقوف">موقوف</option><option value="منتهي">منتهي الاشتراك</option></select>
     </div>
     <div class="form-group"><div class="form-label">رمز الحضور الذاتي (4-6 أرقام)</div><input type="number" id="pl-code" placeholder="مثال: 1234" style="letter-spacing:4px;text-align:center" inputmode="numeric"></div>
     <div class="form-group"><div class="form-label">ملاحظات</div><textarea id="pl-notes" rows="2" placeholder="أي ملاحظات..."></textarea></div>
@@ -721,6 +729,7 @@ select{cursor:pointer;background-image:none}
     <div class="form-grid">
       <div class="form-group"><div class="form-label">نوع الاشتراك</div>
         <select id="sub-type" onchange="updateSubAmount()">
+          <option value="مفتوح">🎁 مفتوح (مجاني)</option>
           <option value="شهري">شهري — 250 ريال</option>
           <option value="فصلي">3 أشهر — 750 ريال</option>
           <option value="نصف سنوي">6 أشهر — 1,500 ريال</option>
@@ -1845,8 +1854,8 @@ function changeMonth(dir){
 //  SUBSCRIPTIONS
 // ============================================================
 function updateSubAmount(){
-  const map={شهري:prices.monthly||250,فصلي:prices.quarter||750,'نصف سنوي':prices.half||1500,سنوي:prices.annual||3000};
-  $('sub-amount').value=map[$('sub-type').value]||prices.monthly||250;
+  const map={شهري:prices.monthly||250,فصلي:prices.quarter||750,'نصف سنوي':prices.half||1500,سنوي:prices.annual||3000,مفتوح:0};
+  $('sub-amount').value=map[$('sub-type').value]!==undefined?map[$('sub-type').value]:prices.monthly||250;
   calcSubEndDate();
 }
 
@@ -1854,7 +1863,7 @@ function calcSubEndDate(){
   const dateStr=buildDateStr($('sub-day').value,$('sub-month').value,$('sub-year').value);
   if(!dateStr)return;
   const type=$('sub-type').value;
-  const monthsMap={شهري:1,فصلي:3,'نصف سنوي':6,سنوي:12};
+  const monthsMap={شهري:1,فصلي:3,'نصف سنوي':6,سنوي:12,مفتوح:120};
   const endDate=new Date(dateStr);
   endDate.setMonth(endDate.getMonth()+(monthsMap[type]||1));
   // Set end date selects
@@ -1870,7 +1879,7 @@ function addSubscription(){
   const pid=parseInt($('sub-player').value);if(!pid){showNotif('اختر لاعباً','red');return;}
   const dateStr=buildDateStr($('sub-day').value,$('sub-month').value,$('sub-year').value);
   if(!dateStr){showNotif('حدد تاريخ البداية','red');return;}
-  const type=$('sub-type').value;const monthsMap={شهري:1,فصلي:3,'نصف سنوي':6,سنوي:12};
+  const type=$('sub-type').value;const monthsMap={شهري:1,فصلي:3,'نصف سنوي':6,سنوي:12,مفتوح:120};
   const endDate=new Date(dateStr);endDate.setMonth(endDate.getMonth()+monthsMap[type]);
   const s={id:Date.now(),playerId:pid,type,amount:parseInt($('sub-amount').value)||prices.monthly,start:dateStr,end:endDate.toISOString().split('T')[0],payment:$('sub-payment').value,status:'نشط'};
   subscriptions.push(s);save('subs',subscriptions);
@@ -2035,6 +2044,27 @@ function updateMatchPreview(){
   prev.textContent=buildMatchMsg('اسم اللاعب');prev.style.color='var(--text)';
   renderMatchPlayersList();
 }
+function sendMatchInviteGroup(groupName){
+  const msg=$('match-msg-preview').innerText||$('match-msg-preview').textContent;
+  if(!msg||msg==='أدخل تفاصيل المباراة...'){showNotif('أدخل تفاصيل المباراة أولاً','red');return;}
+  // ابحث عن المجموعة
+  const grp=groups.find(g=>g.name===groupName||g.name.includes(groupName));
+  const groupPlayers=grp?players.filter(p=>p.groupId==grp.id&&p.phone):players.filter(p=>p.phone);
+  if(!groupPlayers.length){showNotif('لا يوجد لاعبون في هذه الفئة','red');return;}
+  // ابن رسالة الجروب مع أسماء المدربين
+  const coaches_group=users.filter(u=>u.role==='coach'&&u.group===groupName);
+  const coachNames=coaches_group.map(c=>c.name).join(' & ');
+  const fullMsg=msg+(coachNames?`
+
+👨‍🏫 المدربون: ${coachNames}`:'');
+  // افتح واتساب بأول رقم (رسالة الجروب)
+  const phone=groupPlayers[0].phone.replace(/\D/g,'');
+  const intl=phone.startsWith('0')?'966'+phone.slice(1):phone;
+  const url=`https://wa.me/${intl}?text=${encodeURIComponent(fullMsg)}`;
+  window.open(url,'_blank');
+  showNotif(`تم فتح رسالة جروب ${groupName} ✓`,'green');
+}
+
 function sendMatchInviteAll(){
   const opp=$('m-opponent').value.trim();if(!opp){showNotif('أدخل اسم الأكاديمية المنافسة','red');return;}
   const dateStr=buildDateStr($('m-day').value,$('m-month').value,$('m-year').value);if(!dateStr){showNotif('حدد تاريخ المباراة','red');return;}
@@ -2796,12 +2826,51 @@ function renderOverallStats(){
 
 // ── EXPORT FUNCTIONS ──
 function exportPlayers(){
-  const headers=['الاسم الأول','اسم العائلة','العمر','رقم الجوال','رقم الطوارئ','المجموعة','المركز','الحالة','رمز الحضور','تاريخ الانضمام'];
-  const rows=players.map(p=>{
+  if(typeof XLSX==='undefined'){showNotif('جاري التحميل...','green');return;}
+  const wb=XLSX.utils.book_new();
+  // ترتيب: شباب أولاً ثم براعم
+  const shG=groups.find(g=>g.name.includes('شباب'));
+  const brG=groups.find(g=>g.name.includes('براعم'));
+  const shabab=players.filter(p=>shG&&p.groupId==shG.id);
+  const baraem=players.filter(p=>brG&&p.groupId==brG.id);
+  const others=players.filter(p=>(!shG||p.groupId!=shG.id)&&(!brG||p.groupId!=brG.id));
+  const sorted=[...shabab,...baraem,...others];
+
+  const headers=['#','الاسم الكامل','العمر','رقم الجوال','رقم الطوارئ','الفئة','المركز','الحالة','رمز الحضور','تاريخ الانضمام'];
+  const rows=sorted.map((p,i)=>{
     const g=groups.find(x=>x.id==p.groupId);
-    return[p.fname,p.lname,p.age||'',p.phone||'',p.phone2||'',g?g.name:'',p.position||'',p.status||'',p.checkinCode||'',p.joinDate||''];
+    return[i+1,p.fname+' '+p.lname,p.age||'',p.phone||'',p.phone2||'',g?g.name:'',p.position||'',p.status||'',p.checkinCode||'',p.joinDate||''];
   });
-  downloadCSV('لاعبو_الأكاديمية',headers,rows);
+
+  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+  // عرض الأعمدة
+  ws['!cols']=[{wch:4},{wch:22},{wch:6},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10},{wch:14}];
+  // تجميد أول صف
+  ws['!freeze']={xSplit:0,ySplit:1};
+
+  // شيت ثاني — شباب فقط
+  if(shabab.length){
+    const ws2=XLSX.utils.aoa_to_sheet([headers,...shabab.map((p,i)=>{
+      const g=groups.find(x=>x.id==p.groupId);
+      return[i+1,p.fname+' '+p.lname,p.age||'',p.phone||'',p.phone2||'',g?g.name:'',p.position||'',p.status||'',p.checkinCode||'',p.joinDate||''];
+    })]);
+    ws2['!cols']=[{wch:4},{wch:22},{wch:6},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,'فئة الشباب',ws2);
+  }
+
+  // شيت ثالث — براعم فقط
+  if(baraem.length){
+    const ws3=XLSX.utils.aoa_to_sheet([headers,...baraem.map((p,i)=>{
+      const g=groups.find(x=>x.id==p.groupId);
+      return[i+1,p.fname+' '+p.lname,p.age||'',p.phone||'',p.phone2||'',g?g.name:'',p.position||'',p.status||'',p.checkinCode||'',p.joinDate||''];
+    })]);
+    ws3['!cols']=[{wch:4},{wch:22},{wch:6},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,'فئة البراعم',ws3);
+  }
+
+  XLSX.utils.book_append_sheet(wb,'جميع اللاعبين',ws);
+  XLSX.writeFile(wb,'لاعبو_ONE_FIRE_'+new Date().getFullYear()+'.xlsx');
+  showNotif('تم تصدير ملف Excel ✓','green');
 }
 
 function exportAttendance(){
