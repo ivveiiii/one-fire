@@ -225,17 +225,64 @@ select{cursor:pointer;background-image:none}
       <!-- Step 1: اختيار نوع المستخدم -->
       <div id="login-step1">
         <div style="font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:14px">اختر نوع الدخول</div>
-        <div style="display:flex;gap:10px">
-          <button onclick="selectLoginType('admin')" style="flex:1;padding:16px 10px;border-radius:14px;border:1px solid rgba(255,77,0,.3);background:rgba(255,77,0,.1);color:#fff;font-family:'Tajawal',sans-serif;font-size:15px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,77,0,.25)'" onmouseout="this.style.background='rgba(255,77,0,.1)'">
-            <div style="font-size:26px;margin-bottom:6px">🛡️</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button onclick="selectLoginType('admin')" style="flex:1;padding:16px 8px;border-radius:14px;border:1px solid rgba(255,77,0,.3);background:rgba(255,77,0,.1);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,77,0,.25)'" onmouseout="this.style.background='rgba(255,77,0,.1)'">
+            <div style="font-size:24px;margin-bottom:6px">🛡️</div>
             <div style="font-weight:700">الإدارة</div>
           </button>
-          <button onclick="selectLoginType('coach')" style="flex:1;padding:16px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:15px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
-            <div style="font-size:26px;margin-bottom:6px">👨‍🏫</div>
+          <button onclick="selectLoginType('coach')" style="flex:1;padding:16px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+            <div style="font-size:24px;margin-bottom:6px">👨‍🏫</div>
             <div style="font-weight:700">المدربون</div>
           </button>
         </div>
+        <button onclick="selectLoginType('trial')" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(249,115,22,.3);background:rgba(249,115,22,.1);color:#fff;font-family:'Tajawal',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px" onmouseover="this.style.background='rgba(249,115,22,.2)'" onmouseout="this.style.background='rgba(249,115,22,.1)'">
+          <span style="font-size:22px">🔶</span>
+          <div style="font-weight:700">تسجيل لاعب تجربة</div>
+        </button>
       </div>
+      <!-- Step Trial: تسجيل لاعب تجربة -->
+      <div id="login-step-trial" style="display:none">
+        <button onclick="backToStep1()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;margin-bottom:12px;padding:0">← رجوع</button>
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-size:28px">🔶</div>
+          <div style="font-weight:700;font-size:15px;margin-top:4px">تسجيل لاعب تجربة</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="trial-today-date"></div>
+        </div>
+        <!-- رمز مخفي -->
+        <div id="trial-pass-section">
+          <input type="password" id="login-pass-trial" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')verifyTrialPass()" style="text-align:center;font-size:28px;letter-spacing:10px;padding:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;color:#fff;width:100%;font-family:'Oswald',sans-serif;box-sizing:border-box">
+          <div id="login-err-trial" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none">❌ رمز غير صحيح</div>
+          <button class="btn btn-fire btn-full" onclick="verifyTrialPass()" style="font-size:16px;padding:14px;margin-top:10px">دخول</button>
+        </div>
+        <!-- نموذج التسجيل -->
+        <div id="trial-form-section" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="form-group"><div class="form-label">الاسم الأول *</div><input id="trf-fname" placeholder="الاسم الأول"></div>
+            <div class="form-group"><div class="form-label">اسم العائلة</div><input id="trf-lname" placeholder="العائلة"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="form-group"><div class="form-label">سنة الميلاد</div><input type="number" id="trf-birth" placeholder="2010" min="1980" max="2025" inputmode="numeric"></div>
+            <div class="form-group"><div class="form-label">المركز</div>
+              <select id="trf-pos">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="حارس مرمى">حارس مرمى</option>
+                <option value="مدافع">مدافع</option>
+                <option value="وسط">وسط</option>
+                <option value="جناح">جناح</option>
+                <option value="مهاجم">مهاجم</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><div class="form-label">رقم الجوال</div><input type="tel" id="trf-phone" placeholder="05xxxxxxxx" inputmode="numeric"></div>
+          <div class="form-group"><div class="form-label">رقم الجوال البديل</div><input type="tel" id="trf-phone2" placeholder="05xxxxxxxx" inputmode="numeric"></div>
+          <div class="form-group"><div class="form-label">المجموعة</div><select id="trf-group"><option value="">— اختر —</option></select></div>
+          <div style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:10px;padding:10px;font-size:12px;color:#F97316;margin-bottom:12px;text-align:center">
+            📅 تاريخ بداية التجربة: <strong id="trf-date"></strong>
+          </div>
+          <button class="btn btn-fire btn-full" onclick="submitTrialPlayer()" style="font-size:15px;padding:14px"><i class="ti ti-check"></i> تسجيل التجربة</button>
+        </div>
+      </div>
+
       <!-- Step 2a: رمز الإدارة -->
       <div id="login-step-admin" style="display:none">
         <button onclick="backToStep1()" style="background:none;border:none;color:rgba(255,255,255,.4);font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;margin-bottom:12px;padding:0">← رجوع</button>
@@ -1065,6 +1112,15 @@ function selectLoginType(type){
   if(type==='admin'){
     $('login-step-admin').style.display='block';
     setTimeout(()=>$('login-pass').focus(),100);
+  } else if(type==='trial'){
+    $('login-step-trial').style.display='block';
+    $('trial-today-date').textContent=fmtDate(todayStr());
+    $('trf-date').textContent=fmtDate(todayStr());
+    $('login-pass-trial').value='';
+    $('login-err-trial').style.display='none';
+    $('trial-pass-section').style.display='block';
+    $('trial-form-section').style.display='none';
+    setTimeout(()=>$('login-pass-trial').focus(),100);
   } else {
     $('login-step-coach').style.display='block';
     const coaches=users.filter(u=>u.role==='coach');
@@ -1085,8 +1141,97 @@ function backToStep1(){
   $('login-step-admin').style.display='none';
   $('login-step-coach').style.display='none';
   $('login-step-coach-pass').style.display='none';
+  $('login-step-trial').style.display='none';
   $('login-pass').value='';
   $('login-err').style.display='none';
+}
+
+function verifyTrialPass(){
+  const pass=($('login-pass-trial').value||'').trim();
+  if(pass!=='111'){
+    $('login-err-trial').style.display='block';
+    $('login-pass-trial').value='';
+    $('login-pass-trial').focus();
+    return;
+  }
+  $('login-err-trial').style.display='none';
+  $('trial-pass-section').style.display='none';
+  $('trial-form-section').style.display='block';
+  // عبّئ المجموعات
+  const grpSel=$('trf-group');
+  grpSel.innerHTML='<option value="">— اختر —</option>';
+  // نحاول نحمل المجموعات من Firebase
+  if(db){
+    db.ref('academy/groups').once('value').then(snap=>{
+      const g=snap.val();
+      if(g){const arr=Array.isArray(g)?g:Object.values(g);arr.forEach(gr=>grpSel.innerHTML+=`<option value="${gr.id}">${gr.name}</option>`);}
+    }).catch(()=>{groups.forEach(gr=>grpSel.innerHTML+=`<option value="${gr.id}">${gr.name}</option>`);});
+  } else {
+    groups.forEach(gr=>grpSel.innerHTML+=`<option value="${gr.id}">${gr.name}</option>`);
+  }
+  ['trf-fname','trf-lname','trf-phone','trf-phone2'].forEach(id=>$(id).value='');
+  $('trf-birth').value='';
+  $('trf-pos').value='لا يوجد';
+  setTimeout(()=>$('trf-fname').focus(),100);
+}
+
+function submitTrialPlayer(){
+  const fn=$('trf-fname').value.trim();
+  if(!fn){alert('أدخل الاسم الأول');return;}
+  const birthYear=parseInt($('trf-birth').value)||null;
+  const age=birthYear?new Date().getFullYear()-birthYear:null;
+  const p={
+    id:Date.now(),
+    fname:fn,
+    lname:$('trf-lname').value.trim(),
+    age:age,
+    birthYear:birthYear,
+    phone:$('trf-phone').value.trim(),
+    phone2:$('trf-phone2').value.trim()||null,
+    position:$('trf-pos').value||'لا يوجد',
+    groupId:$('trf-group').value||null,
+    checkinCode:null,
+    status:'تجربة',
+    joinDate:todayStr(),
+    createdAt:todayStr(),
+    trialStartDate:todayStr(),
+    docs:{id:false,iqama:false,family:false,terms:false,health:false},
+    notes:'لاعب تجربة — مسجل من شاشة التجربة'
+  };
+  // حفظ في Firebase مباشرة
+  if(db){
+    db.ref('academy/players').once('value').then(snap=>{
+      let arr=[];
+      const val=snap.val();
+      if(val) arr=Array.isArray(val)?val:Object.values(val);
+      arr.push(p);
+      return db.ref('academy/players').set(arr);
+    }).then(()=>{
+      showTrialSuccess(fn);
+    }).catch(()=>{
+      // fallback local
+      players.push(p);
+      save('players',players);
+      showTrialSuccess(fn);
+    });
+  } else {
+    players.push(p);
+    save('players',players);
+    showTrialSuccess(fn);
+  }
+}
+
+function showTrialSuccess(name){
+  $('login-step-trial').innerHTML=`
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:60px;margin-bottom:16px">✅</div>
+      <div style="font-weight:700;font-size:18px;margin-bottom:8px">تم تسجيل التجربة!</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:6px">${name}</div>
+      <div style="font-size:12px;color:#F97316;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:10px;padding:10px;margin-top:12px">
+        📅 تاريخ بداية التجربة: <strong>${fmtDate(todayStr())}</strong>
+      </div>
+      <button onclick="backToStep1()" class="btn btn-outline btn-full" style="margin-top:16px">تسجيل لاعب آخر</button>
+    </div>`;
 }
 
 function backToCoaches(){
@@ -1449,6 +1594,16 @@ function populateSubPlayer(){
 // ============================================================
 //  PLAYERS
 // ============================================================
+function updateAgeFromBirth(){
+  const y=parseInt($('pl-age').value);
+  if(y&&y>1970&&y<=new Date().getFullYear()){
+    const age=new Date().getFullYear()-y;
+    $('pl-age-calc').textContent=`العمر: ${age} سنة`;
+  } else {
+    $('pl-age-calc').textContent='';
+  }
+}
+
 function getNextCheckinCode(){
   // أعلى رقم موجود + 1
   const codes=players.map(p=>parseInt(p.checkinCode)||0).filter(n=>n>0);
@@ -1528,7 +1683,7 @@ function openEditPlayer(id){
   const p=players.find(x=>x.id===id);if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
   $('pl-id').value=p.id;$('pl-fname').value=p.fname;$('pl-lname').value=p.lname;
-  $('pl-age').value=p.age||'';$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';$('pl-code').value=p.checkinCode||'';
+  $('pl-age').value=p.birthYear||p.age||'';updateAgeFromBirth();$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';$('pl-code').value=p.checkinCode||'';
   $('pl-notes').value=p.notes||'';
   populateGroupSelect('pl-group');$('pl-group').value=p.groupId||'';
   $('pl-pos').value=p.position||'لا يوجد';
@@ -1583,13 +1738,14 @@ function savePlayer(){
     // edit
     const p=players.find(x=>x.id==pid);if(!p)return;
     p.fname=fn;p.lname=ln;p.age=parseInt($('pl-age').value)||null;
+    const by=parseInt($('pl-age').value)||null;p.birthYear=by;p.age=by?new Date().getFullYear()-by:null;
     p.phone=$('pl-phone').value.trim();p.phone2=$('pl-phone2').value.trim()||null;p.checkinCode=$('pl-code').value.trim()||null;p.groupId=$('pl-group').value||null;
     p.position=$('pl-pos').value||'لا يوجد';p.notes=$('pl-notes').value.trim();p.status=$('pl-status').value||'نشط';
     save('players',players);logActivity(buildNotif('edit',fn+' '+ln),'var(--amber)');
     closeModal('player');renderPlayers();renderDashboard();showNotif('تم الحفظ ✓','green');
   } else {
     // add
-    const p={id:Date.now(),fname:fn,lname:ln,age:parseInt($('pl-age').value)||null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||String(getNextCheckinCode()),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
+    const p={id:Date.now(),fname:fn,lname:ln,birthYear:parseInt($('pl-age').value)||null,age:parseInt($('pl-age').value)?new Date().getFullYear()-parseInt($('pl-age').value):null,phone:$('pl-phone').value.trim(),phone2:$('pl-phone2').value.trim()||null,checkinCode:$('pl-code').value.trim()||String(getNextCheckinCode()),groupId:$('pl-group').value||null,position:$('pl-pos').value||'لا يوجد',notes:$('pl-notes').value.trim(),status:'نشط',joinDate:todayStr(),docs:{
       id:getSwitch('doc-id'),
       iqama:getSwitch('doc-id'),
       family:getSwitch('doc-id'),
