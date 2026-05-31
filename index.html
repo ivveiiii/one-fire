@@ -1680,7 +1680,7 @@ function openAddPlayer(){
   $('pl-code').value=getNextCheckinCode();
 }
 function openEditPlayer(id){
-  const p=players.find(x=>x.id===id);if(!p)return;
+  const p=players.find(x=>x.id==id||String(x.id)===String(id));if(!p)return;
   $('pl-modal-title').textContent='✏️ تعديل بيانات اللاعب';
   $('pl-id').value=p.id;$('pl-fname').value=p.fname;$('pl-lname').value=p.lname;
   $('pl-age').value=p.birthYear||p.age||'';updateAgeFromBirth();$('pl-phone').value=p.phone||'';$('pl-phone2').value=p.phone2||'';$('pl-code').value=p.checkinCode||'';
@@ -2883,7 +2883,7 @@ function renderSettingsPage(){
 //  PLAYER STATS MODAL
 // ============================================================
 function openPlayerStats(pid){
-  const p=players.find(x=>x.id===pid);
+  const p=players.find(x=>x.id==pid||String(x.id)===String(pid));
   if(!p)return;
   $('pstats-title').innerHTML=`📊 ${p.fname} ${p.lname} <span style="font-size:11px;color:var(--muted);font-weight:400">${p.category||''}</span>`;
   // جمع إحصائيات اللاعب من كل المباريات
