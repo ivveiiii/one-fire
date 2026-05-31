@@ -1695,7 +1695,7 @@ function openEditPlayer(id){
     initDocCheckbox('doc-id',!!(d.id||d.iqama||d.family));
     initDocCheckbox('doc-terms',!!d.terms);
   },50);
-  $('modal-player').classList.add('open');
+  openModal('player');
 }
 // Doc state — simple object
 const docState={'doc-id':false,'doc-terms':false};
